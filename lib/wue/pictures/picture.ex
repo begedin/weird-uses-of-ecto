@@ -7,6 +7,7 @@ defmodule WUE.Pictures.Picture do
   alias Ecto.Changeset
   alias WUE.Pictures
 
+  @derive {Jason.Encoder, only: [:shape]}
   schema "pictures" do
     field(:shape, Pictures.Shape)
   end

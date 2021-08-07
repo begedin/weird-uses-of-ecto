@@ -7,6 +7,8 @@ defmodule WUEWeb.Router do
 
   scope "/api", WUEWeb do
     pipe_through :api
+
+    resources("/pictures", PictureController, only: [:index])
   end
 
   # Enables LiveDashboard only for development

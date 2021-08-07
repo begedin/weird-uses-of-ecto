@@ -25,7 +25,7 @@ defmodule WUE.Pictures.Shape do
   use Ecto.Type
   alias WUE.Pictures.Shape
 
-  @shapes ["polygon", "box", "point"]
+  @shapes ["box", "line", "point", "polygon"]
 
   @impl Ecto.Type
   def type, do: :map
@@ -58,6 +58,7 @@ defmodule WUE.Pictures.Shape do
   end
 
   defp schema_module("box"), do: Shape.Box
+  defp schema_module("line"), do: Shape.Line
   defp schema_module("point"), do: Shape.Point
   defp schema_module("polygon"), do: Shape.Polygon
 
