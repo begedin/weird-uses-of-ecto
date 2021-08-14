@@ -3,7 +3,7 @@ defmodule WUE.Pictures.PictureTest do
   use WUE.DataCase
 
   alias Ecto.Changeset
-  alias WUE.Pictures.Picture
+  alias WUE.Pictures.{Picture, Shape}
 
   @polygon_params %{
     shape: %{type: "polygon", path: [%{x: 1, y: 1}, %{x: 2, y: 2}]}
@@ -25,7 +25,9 @@ defmodule WUE.Pictures.PictureTest do
 
       test "can save a #{@params.shape.type}" do
         assert {:ok, picture} = create(@params)
-        assert picture.shape == @params[:shape]
+
+        assert picture.shape ==
+                 @params[:shape] |> Shape.load() |> Kernel.elem(1)
       end
     end
   end
@@ -36,7 +38,9 @@ defmodule WUE.Pictures.PictureTest do
 
       test "can load a #{@params.shape.type}" do
         assert {:ok, picture} = create(@params)
-        assert Repo.get(Picture, picture.id).shape == stringify(@params[:shape])
+
+        assert Repo.get(Picture, picture.id).shape ==
+                 @params[:shape] |> Shape.load() |> Kernel.elem(1)
       end
     end
   end

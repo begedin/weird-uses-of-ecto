@@ -11,6 +11,7 @@ defmodule WUE.Pictures.Shape.Line do
   alias WUE.Pictures.Shape
 
   @primary_key false
+  @derive {Jason.Encoder, only: [:a, :b]}
   embedded_schema do
     embeds_one(:a, Shape.Point)
     embeds_one(:b, Shape.Point)
@@ -45,6 +46,10 @@ defmodule WUE.Pictures.Shape.Line do
   end
 
   def dump(%__MODULE__{a: a, b: b}) do
-    %{a: Shape.Point.dump(a), b: Shape.Point.dump(b)}
+    %{a: Shape.Point.dump(a), b: Shape.Point.dump(b), type: "line"}
+  end
+
+  def load(%{"a" => a, "b" => b}) do
+    %__MODULE__{a: Shape.Point.load(a), b: Shape.Point.load(b)}
   end
 end

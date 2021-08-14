@@ -9,6 +9,7 @@ defmodule WUEWeb.Router do
     pipe_through :api
 
     resources("/pictures", PictureController, only: [:index])
+    post("/pictures/batch_transpose", PictureController, :batch_transpose)
   end
 
   # Enables LiveDashboard only for development

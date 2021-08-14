@@ -9,7 +9,7 @@ defmodule WUE.Pictures.Picture do
 
   @derive {Jason.Encoder, only: [:shape]}
   schema "pictures" do
-    field(:shape, Pictures.Shape)
+    field(:shape, Pictures.Shape, read_after_writes: true)
   end
 
   def changeset(%{} = params) do

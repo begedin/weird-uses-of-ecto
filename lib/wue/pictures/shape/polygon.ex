@@ -12,6 +12,7 @@ defmodule WUE.Pictures.Shape.Polygon do
   alias WUE.Pictures.Shape
 
   @primary_key false
+  @derive {Jason.Encoder, only: [:path]}
   embedded_schema do
     embeds_many(:path, Shape.Point)
   end
@@ -64,6 +65,13 @@ defmodule WUE.Pictures.Shape.Polygon do
   end
 
   def dump(%__MODULE__{path: path}) do
-    %{path: Enum.map(path, &Shape.Point.dump/1)}
+    %{
+      path: Enum.map(path, &(&1 |> Shape.Point.dump() |> Map.delete(:type))),
+      type: "polygon"
+    }
+  end
+
+  def load(%{"path" => path}) do
+    %__MODULE__{path: Enum.map(path, &Shape.Point.load/1)}
   end
 end

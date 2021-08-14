@@ -17,10 +17,10 @@ defmodule WUE.Pictures.Shape do
 
   # Conclusion
 
-  - This approach is good for a technically oriented API, but not great if we need to support
-    user-friendly, per subfield errors out of the box
-  - It's always possible to "decide" the error field is actually an encounted, more complex error
-    map, or list, etc.
+  - This approach is good for a technically oriented API, but not great if we
+    need to support user-friendly, per subfield errors out of the box
+  - It's always possible to "decide" the error field is actually an encounted,
+    more complex error map, or list, etc.
   """
   use Ecto.Type
   alias WUE.Pictures.Shape
@@ -63,6 +63,10 @@ defmodule WUE.Pictures.Shape do
   defp schema_module("polygon"), do: Shape.Polygon
 
   @impl Ecto.Type
+  def dump(%module{} = data) do
+    module.dump(data)
+  end
+
   def dump(%{type: _} = data) when is_map(data) do
     {:ok, data}
 
@@ -75,8 +79,40 @@ defmodule WUE.Pictures.Shape do
   end
 
   @impl Ecto.Type
-  def load(data) do
+  def load(data) when is_struct(data) do
     {:ok, data}
+  end
+
+  def load(%{"type" => "point"} = data) do
+    {:ok, Shape.Point.load(data)}
+  end
+
+  def load(%{"type" => "line"} = data) do
+    {:ok, Shape.Line.load(data)}
+  end
+
+  def load(%{"type" => "box"} = data) do
+    {:ok, Shape.Box.load(data)}
+  end
+
+  def load(%{"type" => "polygon"} = data) do
+    {:ok, Shape.Polygon.load(data)}
+  end
+
+  def load(%{type: "point"} = data) do
+    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Point.load()}
+  end
+
+  def load(%{type: "line"} = data) do
+    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Line.load()}
+  end
+
+  def load(%{type: "box"} = data) do
+    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Box.load()}
+  end
+
+  def load(%{type: "polygon"} = data) do
+    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Polygon.load()}
   end
 
   defp put_type({:ok, %{} = data}, type), do: {:ok, Map.put(data, :type, type)}

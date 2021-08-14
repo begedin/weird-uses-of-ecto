@@ -10,6 +10,7 @@ defmodule WUE.Pictures.Shape.Box do
   alias Ecto.Changeset
 
   @primary_key false
+  @derive {Jason.Encoder, only: [:x, :y, :w, :h]}
   embedded_schema do
     field(:x, :integer, null: false)
     field(:y, :integer, null: false)
@@ -48,6 +49,10 @@ defmodule WUE.Pictures.Shape.Box do
   end
 
   def dump(%__MODULE__{x: x, y: y, w: w, h: h}) do
-    %{x: x, y: y, w: w, h: h}
+    %{x: x, y: y, w: w, h: h, type: "box"}
+  end
+
+  def load(%{"x" => x, "y" => y, "w" => w, "h" => h}) do
+    %__MODULE__{x: x, y: y, w: w, h: h}
   end
 end

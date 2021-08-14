@@ -11,6 +11,7 @@ defmodule WUE.Pictures.Shape.Point do
   use Ecto.Schema
   alias Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:x, :y]}
   @primary_key false
   embedded_schema do
     field(:x, :integer, null: false)
@@ -46,6 +47,10 @@ defmodule WUE.Pictures.Shape.Point do
   end
 
   def dump(%__MODULE__{x: x, y: y}) do
-    %{x: x, y: y}
+    %{x: x, y: y, type: "point"}
+  end
+
+  def load(%{"x" => x, "y" => y}) do
+    %__MODULE__{x: x, y: y}
   end
 end
