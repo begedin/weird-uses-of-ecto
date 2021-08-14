@@ -1,6 +1,16 @@
 defmodule WUE.Pictures.Transpose do
+  @moduledoc """
+  Use-case module.
+
+  Does a naive "transpose" operation depending on the type of shape given to it.
+
+  Not necesarily accurate, just exists to be an example of a relatively complex
+  operation being done on an item.
+  """
   alias WUE.Pictures
 
+  @doc false
+  @spec call(Pictures.shape()) :: Pictures.shape()
   def call(%Pictures.Shape.Box{} = box) do
     %Pictures.Shape.Box{
       x: box.y,

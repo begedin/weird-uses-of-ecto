@@ -11,6 +11,8 @@ defmodule WUE.Pictures.Shape.Polygon do
   alias Ecto.Changeset
   alias WUE.Pictures.Shape
 
+  @type t :: %__MODULE__{}
+
   @primary_key false
   @derive {Jason.Encoder, only: [:path]}
   embedded_schema do
@@ -56,12 +58,7 @@ defmodule WUE.Pictures.Shape.Polygon do
   end
 
   defp resolve(%Changeset{valid?: true} = changeset) do
-    data =
-      changeset
-      |> Changeset.apply_changes()
-      |> dump()
-
-    {:ok, data}
+    {:ok, Changeset.apply_changes(changeset)}
   end
 
   def dump(%__MODULE__{path: path}) do

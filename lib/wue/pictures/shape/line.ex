@@ -10,6 +10,8 @@ defmodule WUE.Pictures.Shape.Line do
   alias Ecto.Changeset
   alias WUE.Pictures.Shape
 
+  @type t :: %__MODULE__{}
+
   @primary_key false
   @derive {Jason.Encoder, only: [:a, :b]}
   embedded_schema do
@@ -37,12 +39,7 @@ defmodule WUE.Pictures.Shape.Line do
   end
 
   def resolve(%Changeset{valid?: true} = changeset) do
-    data =
-      changeset
-      |> Changeset.apply_changes()
-      |> dump()
-
-    {:ok, data}
+    {:ok, Changeset.apply_changes(changeset)}
   end
 
   def dump(%__MODULE__{a: a, b: b}) do

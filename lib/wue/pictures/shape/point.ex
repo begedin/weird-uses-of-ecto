@@ -11,6 +11,8 @@ defmodule WUE.Pictures.Shape.Point do
   use Ecto.Schema
   alias Ecto.Changeset
 
+  @type t :: %__MODULE__{}
+
   @derive {Jason.Encoder, only: [:x, :y]}
   @primary_key false
   embedded_schema do
@@ -38,12 +40,7 @@ defmodule WUE.Pictures.Shape.Point do
   end
 
   defp resolve(%Changeset{valid?: true} = changeset) do
-    data =
-      changeset
-      |> Changeset.apply_changes()
-      |> Map.take(@keys)
-
-    {:ok, data}
+    {:ok, Changeset.apply_changes(changeset)}
   end
 
   def dump(%__MODULE__{x: x, y: y}) do

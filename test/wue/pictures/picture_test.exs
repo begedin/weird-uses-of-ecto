@@ -8,10 +8,18 @@ defmodule WUE.Pictures.PictureTest do
   @polygon_params %{
     shape: %{type: "polygon", path: [%{x: 1, y: 1}, %{x: 2, y: 2}]}
   }
+  @polygon %Shape.Polygon{
+    path: [
+      %Shape.Point{x: 1, y: 1},
+      %Shape.Point{x: 2, y: 2}
+    ]
+  }
 
   @box_params %{shape: %{type: "box", x: 1, y: 1, w: 10, h: 15}}
+  @box %Shape.Box{x: 1, y: 1, w: 10, h: 15}
 
   @point_params %{shape: %{type: "point", x: 1, y: 2}}
+  @point %Shape.Point{x: 1, y: 2}
 
   defp stringify(%{} = data), do: data |> Jason.encode!() |> Jason.decode!()
 
@@ -20,27 +28,34 @@ defmodule WUE.Pictures.PictureTest do
   end
 
   describe "saving" do
-    for params <- [@polygon_params, @box_params, @point_params] do
-      @params params
+    for {input, output} <- [
+          {@polygon_params, @polygon},
+          {@box_params, @box},
+          {@point_params, @point}
+        ] do
+      @input input
+      @output output
 
-      test "can save a #{@params.shape.type}" do
-        assert {:ok, picture} = create(@params)
-
-        assert picture.shape ==
-                 @params[:shape] |> Shape.load() |> Kernel.elem(1)
+      test "can save a #{@input.shape.type}" do
+        assert {:ok, picture} = create(@input)
+        assert picture.shape == @output
       end
     end
   end
 
   describe "loading" do
-    for params <- [@polygon_params, @box_params, @point_params] do
-      @params params
+    for {input, output} <- [
+          {@polygon_params, @polygon},
+          {@box_params, @box},
+          {@point_params, @point}
+        ] do
+      @input input
+      @output output
 
-      test "can load a #{@params.shape.type}" do
-        assert {:ok, picture} = create(@params)
+      test "can load a #{@input.shape.type}" do
+        assert {:ok, picture} = create(@input)
 
-        assert Repo.get(Picture, picture.id).shape ==
-                 @params[:shape] |> Shape.load() |> Kernel.elem(1)
+        assert Repo.get(Picture, picture.id).shape == @output
       end
     end
   end
@@ -60,13 +75,14 @@ defmodule WUE.Pictures.PictureTest do
 
     test "casts box" do
       assert %{valid?: true} = changeset = Picture.changeset(@box_params)
-      assert Changeset.get_field(changeset, :shape) == @box_params[:shape]
+      assert Changeset.get_field(changeset, :shape) == @box
     end
 
     test "casts box with string keys" do
       params = @box_params |> Jason.encode!() |> Jason.decode!()
       assert %{valid?: true} = changeset = Picture.changeset(params)
-      assert Changeset.get_field(changeset, :shape) == @box_params[:shape]
+
+      assert Changeset.get_field(changeset, :shape) == @box
     end
 
     test "requires x, y, w, h on a box" do
@@ -79,13 +95,13 @@ defmodule WUE.Pictures.PictureTest do
 
     test "casts polygon" do
       assert %{valid?: true} = changeset = Picture.changeset(@polygon_params)
-      assert Changeset.get_field(changeset, :shape) == @polygon_params[:shape]
+      assert Changeset.get_field(changeset, :shape) == @polygon
     end
 
     test "casts polygon with string keys" do
       params = stringify(@polygon_params)
       assert %{valid?: true} = changeset = Picture.changeset(params)
-      assert Changeset.get_field(changeset, :shape) == @polygon_params[:shape]
+      assert Changeset.get_field(changeset, :shape) == @polygon
     end
 
     test "requires path on polygon" do
@@ -123,13 +139,13 @@ defmodule WUE.Pictures.PictureTest do
 
     test "casts point" do
       assert %{valid?: true} = changeset = Picture.changeset(@point_params)
-      assert Changeset.get_field(changeset, :shape) == @point_params[:shape]
+      assert Changeset.get_field(changeset, :shape) == @point
     end
 
     test "casts point with string keys" do
       params = stringify(@point_params)
       assert %{valid?: true} = changeset = Picture.changeset(params)
-      assert Changeset.get_field(changeset, :shape) == @point_params[:shape]
+      assert Changeset.get_field(changeset, :shape) == @point
     end
 
     test "requires x,y on point" do

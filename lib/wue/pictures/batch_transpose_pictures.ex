@@ -6,12 +6,13 @@ defmodule WUE.Pictures.BatchTransposePictures do
   def call(%Pictures.BatchParams{} = filter) do
     new_data =
       filter
-      |> Pictures.ListPictures.call()
+      |> Pictures.list_pictures()
       |> Enum.map(fn %Pictures.Picture{} = picture ->
         transposed =
           picture.shape
           |> Pictures.Transpose.call()
           |> Pictures.Shape.dump()
+          |> Kernel.elem(1)
 
         %{id: picture.id, shape: transposed}
       end)

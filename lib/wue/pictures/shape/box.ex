@@ -9,6 +9,8 @@ defmodule WUE.Pictures.Shape.Box do
   use Ecto.Schema
   alias Ecto.Changeset
 
+  @type t :: %__MODULE__{}
+
   @primary_key false
   @derive {Jason.Encoder, only: [:x, :y, :w, :h]}
   embedded_schema do
@@ -40,12 +42,7 @@ defmodule WUE.Pictures.Shape.Box do
   end
 
   def resolve(%Changeset{valid?: true} = changeset) do
-    data =
-      changeset
-      |> Changeset.apply_changes()
-      |> dump()
-
-    {:ok, data}
+    {:ok, Changeset.apply_changes(changeset)}
   end
 
   def dump(%__MODULE__{x: x, y: y, w: w, h: h}) do

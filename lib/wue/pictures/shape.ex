@@ -9,6 +9,10 @@ defmodule WUE.Pictures.Shape do
 
   - the shape type is easily customizable, and simple to implement
   - adding more shapes is as straight forward as a new `cast/1` clause
+  - the only place where raw values are visible are
+    - in the database
+    - when accepting params from the frontend
+  - everything else uses structs
 
   # Disadvantages of this method
 
@@ -23,20 +27,33 @@ defmodule WUE.Pictures.Shape do
     more complex error map, or list, etc.
   """
   use Ecto.Type
-  alias WUE.Pictures.Shape
+  alias WUE.{Pictures, Pictures.Shape}
 
   @shapes ["box", "line", "point", "polygon"]
 
+  @doc """
+  The underlying base type of a polymorphic embed is a map, which, at the db
+  level, is treated as a jsonb column.
+  """
   @impl Ecto.Type
   def type, do: :map
 
   @impl Ecto.Type
+  @doc """
+  Used when params are cast via Ecto.Changeset, or when arguments are passed in
+  to Ecto.Query.
+
+  For ease of use, we have an atom and string variant, so any of the two
+  potential params shapes are supported.
+  """
+  @spec cast(map) :: {:ok, Pictures.shape()} | {:error, messsage: String.t()}
   def cast(%{"type" => type} = data) when type in @shapes do
-    do_cast(data, type)
+    module = schema_module(type)
+    module.cast(data)
   end
 
-  def cast(%{type: type} = data) when type in @shapes do
-    do_cast(data, type)
+  def cast(%{type: _} = data) do
+    data |> Jason.encode!() |> Jason.decode!() |> cast
   end
 
   def cast(%{}) do
@@ -49,40 +66,30 @@ defmodule WUE.Pictures.Shape do
     {:error, message: "must be a map"}
   end
 
-  defp do_cast(data, type) do
-    module = schema_module(type)
-
-    module
-    |> Kernel.apply(:cast, [data])
-    |> put_type(type)
-  end
-
+  @spec schema_module(String.t()) :: module
   defp schema_module("box"), do: Shape.Box
   defp schema_module("line"), do: Shape.Line
   defp schema_module("point"), do: Shape.Point
   defp schema_module("polygon"), do: Shape.Polygon
 
+  @doc """
+  Used when the data needs to be validated against a native type, for example,
+  when finally saving the struct to the db.
+  """
   @impl Ecto.Type
+  @spec dump(Pictures.shape()) :: {:ok, map}
   def dump(%module{} = data) do
-    module.dump(data)
+    {:ok, module.dump(data)}
   end
 
-  def dump(%{type: _} = data) when is_map(data) do
-    {:ok, data}
+  @doc """
+  Used when the data from the db needs to be loaded into this type.
 
-    data =
-      data
-      |> Jason.encode!()
-      |> Jason.decode!()
-
-    {:ok, data}
-  end
+  This is effectively the reverse of `dump/1`
+  """
 
   @impl Ecto.Type
-  def load(data) when is_struct(data) do
-    {:ok, data}
-  end
-
+  @spec load(map) :: {:ok, Pictures.shape()}
   def load(%{"type" => "point"} = data) do
     {:ok, Shape.Point.load(data)}
   end
@@ -98,23 +105,4 @@ defmodule WUE.Pictures.Shape do
   def load(%{"type" => "polygon"} = data) do
     {:ok, Shape.Polygon.load(data)}
   end
-
-  def load(%{type: "point"} = data) do
-    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Point.load()}
-  end
-
-  def load(%{type: "line"} = data) do
-    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Line.load()}
-  end
-
-  def load(%{type: "box"} = data) do
-    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Box.load()}
-  end
-
-  def load(%{type: "polygon"} = data) do
-    {:ok, data |> Jason.encode!() |> Jason.decode!() |> Shape.Polygon.load()}
-  end
-
-  defp put_type({:ok, %{} = data}, type), do: {:ok, Map.put(data, :type, type)}
-  defp put_type({:error, _} = error, _type), do: error
 end
