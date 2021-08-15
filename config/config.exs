@@ -14,7 +14,8 @@ config :wue,
 # Configures the endpoint
 config :wue, WUEWeb.Endpoint,
   url: [host: "localhost"],
-  secret_key_base: "KXAqcqZ9RELddLslQrwdkHjemvnmOAUHD6CrQBvsDrPLx3AAhDnmuR9kRKhcSeEi",
+  secret_key_base:
+    "KXAqcqZ9RELddLslQrwdkHjemvnmOAUHD6CrQBvsDrPLx3AAhDnmuR9kRKhcSeEi",
   render_errors: [view: WUEWeb.ErrorView, accepts: ~w(json), layout: false],
   pubsub_server: WUE.PubSub,
   live_view: [signing_salt: "ieR1+UgC"]

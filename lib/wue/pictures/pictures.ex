@@ -16,7 +16,6 @@ defmodule WUE.Pictures do
   Used to create a new picture. Shape of expected params is
 
   ```
-  ```
   %{
     "shape" => %{"type" => "point", "x" => integer, "y" => integer}
   }
@@ -49,8 +48,24 @@ defmodule WUE.Pictures do
   """
   @spec create_picture!(map) :: Pictures.Picture.t()
   def create_picture!(%{} = params) do
+    create_picture!(nil, params)
+  end
+
+  @doc """
+  Used to create a picture associated to an artist
+  """
+  @spec create_picture!(Pictures.Artist.t() | nil, map) :: Pictures.Picture.t()
+  def create_picture!(artist, %{} = params) do
     params
     |> Pictures.Picture.changeset()
+    |> Ecto.Changeset.put_assoc(:artist, artist)
+    |> Repo.insert!()
+  end
+
+  @spec create_artist!(map) :: Pictures.Artist.t()
+  def create_artist!(%{} = params) do
+    params
+    |> Pictures.Artist.changeset()
     |> Repo.insert!()
   end
 

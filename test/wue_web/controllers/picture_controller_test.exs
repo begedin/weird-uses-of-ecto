@@ -75,6 +75,66 @@ defmodule WUEWeb.PictureControllerTest do
                })
                |> json_response(200)
     end
+
+    test "filters by artist name", %{conn: conn} do
+      me = Pictures.create_artist!(%{name: "Me", country: "Croatia"})
+      you = Pictures.create_artist!(%{name: "You", country: "Poland"})
+      _they = Pictures.create_artist!(%{name: "They", country: "Croatia"})
+
+      Pictures.create_picture!(me, %{shape: %{type: "point", x: 1, y: 1}})
+      Pictures.create_picture!(me, %{shape: %{type: "point", x: 1, y: 1}})
+      Pictures.create_picture!(you, %{shape: %{type: "point", x: 1, y: 1}})
+
+      assert [_, _] =
+               conn
+               |> get(@path, %{filter: %{artist_name: ["Me"]}})
+               |> json_response(200)
+
+      assert [_] =
+               conn
+               |> get(@path, %{filter: %{artist_name: ["You"]}})
+               |> json_response(200)
+
+      assert [_, _, _] =
+               conn
+               |> get(@path, %{filter: %{artist_name: ["Me", "You"]}})
+               |> json_response(200)
+
+      assert [] =
+               conn
+               |> get(@path, %{filter: %{artist_name: ["They"]}})
+               |> json_response(200)
+    end
+
+    test "filters by artist country", %{conn: conn} do
+      me = Pictures.create_artist!(%{name: "Me", country: "Croatia"})
+      you = Pictures.create_artist!(%{name: "You", country: "Poland"})
+      _they = Pictures.create_artist!(%{name: "They", country: "Italy"})
+
+      Pictures.create_picture!(me, %{shape: %{type: "point", x: 1, y: 1}})
+      Pictures.create_picture!(me, %{shape: %{type: "point", x: 1, y: 1}})
+      Pictures.create_picture!(you, %{shape: %{type: "point", x: 1, y: 1}})
+
+      assert [_, _] =
+               conn
+               |> get(@path, %{filter: %{artist_country: ["Croatia"]}})
+               |> json_response(200)
+
+      assert [_] =
+               conn
+               |> get(@path, %{filter: %{artist_country: ["Poland"]}})
+               |> json_response(200)
+
+      assert [_, _, _] =
+               conn
+               |> get(@path, %{filter: %{artist_country: ["Croatia", "Poland"]}})
+               |> json_response(200)
+
+      assert [] =
+               conn
+               |> get(@path, %{filter: %{artist_country: ["Italy"]}})
+               |> json_response(200)
+    end
   end
 
   describe "PUT /pictures/batch_transpose" do
@@ -124,13 +184,13 @@ defmodule WUEWeb.PictureControllerTest do
                |> json_response(200)
 
       assert %{point | shape: Pictures.Transpose.call(point.shape)} ==
-               Repo.get(Pictures.Picture, point.id)
+               Pictures.Picture |> Repo.get(point.id) |> Repo.preload(:artist)
 
       assert %{line | shape: Pictures.Transpose.call(line.shape)} ==
-               Repo.get(Pictures.Picture, line.id)
+               Pictures.Picture |> Repo.get(line.id) |> Repo.preload(:artist)
 
       assert %{box | shape: Pictures.Transpose.call(box.shape)} ==
-               Repo.get(Pictures.Picture, box.id)
+               Pictures.Picture |> Repo.get(box.id) |> Repo.preload(:artist)
     end
   end
 end

@@ -62,6 +62,8 @@ defmodule WUE.Pictures.Picture do
   @derive {Jason.Encoder, only: [:shape]}
   schema "pictures" do
     field(:shape, Pictures.Shape, read_after_writes: true)
+
+    belongs_to(:artist, Pictures.Artist)
   end
 
   @doc """
@@ -69,7 +71,7 @@ defmodule WUE.Pictures.Picture do
   """
   @spec changeset(map) :: Changeset.t()
   def changeset(%{} = params) do
-    changeset(%__MODULE__{}, params)
+    changeset(%__MODULE__{artist: nil}, params)
   end
 
   @doc """

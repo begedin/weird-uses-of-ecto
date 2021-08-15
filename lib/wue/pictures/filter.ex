@@ -9,7 +9,10 @@ defmodule WUE.Pictures.Filter do
   """
 
   use Ecto.Schema
+
   import Ecto.Query, only: [join: 5, or_where: 3, subquery: 1, where: 3]
+  import WUE.Pictures.QueryMacros, only: [maybe_join: 5]
+
   alias Ecto.Changeset
   alias WUE.Pictures
 
@@ -64,13 +67,20 @@ defmodule WUE.Pictures.Filter do
   embedded_schema do
     field(:type, :string, null: true)
     field(:select_all, :boolean, null: false, default: false)
+    field(:artist_name, {:array, :string}, null: false)
+    field(:artist_country, {:array, :string}, null: false)
 
     embeds_one(:overlaps, Bounds)
   end
 
   def changeset(%__MODULE__{} = struct, params) do
     struct
-    |> Changeset.cast(params, [:type, :select_all])
+    |> Changeset.cast(params, [
+      :type,
+      :select_all,
+      :artist_name,
+      :artist_country
+    ])
     |> Changeset.cast_embed(:overlaps)
     |> validate_explicit_all()
   end
@@ -179,70 +189,29 @@ defmodule WUE.Pictures.Filter do
       [point: point, line: line, box: box],
       not (is_nil(box) and is_nil(line) and is_nil(point))
     )
+  end
 
-    # queryable
-    # |> where(
-    #   [q],
-    #   (fragment("?::varchar", q.shape["type"]) == "point" and
-    #      fragment("?::int", q.shape["x"]) >= ^left and
-    #      fragment("?::int", q.shape["x"]) <= ^right and
-    #      fragment("?::int", q.shape["y"]) >= ^bottom and
-    #      fragment("?::int", q.shape["y"]) <= ^top) or
-    #     ((fragment("?::varchar", q.shape["type"]) == "line" and
-    #         (fragment("?::int", q.shape["a"]["x"]) >= ^left and
-    #            fragment("?::int", q.shape["a"]["x"]) <= ^right and
-    #            fragment("?::int", q.shape["a"]["y"]) >= ^bottom and
-    #            fragment("?::int", q.shape["a"]["y"]) <= ^top)) or
-    #        (fragment("?::int", q.shape["b"]["x"]) >= ^left and
-    #           fragment("?::int", q.shape["b"]["x"]) <= ^right and
-    #           fragment("?::int", q.shape["b"]["y"]) >= ^bottom and
-    #           fragment("?::int", q.shape["b"]["y"]) <= ^top)) or
-    #     ((fragment("?::varchar", q.shape["type"]) == "box" and
-    #         (fragment("?::int", q.shape["x"]) >= ^left and
-    #            fragment("?::int", q.shape["x"]) <= ^right and
-    #            fragment("?::int", q.shape["y"]) >= ^bottom and
-    #            fragment("?::int", q.shape["y"]) <= ^top)) or
-    #        (fragment("?::int", q.shape["x"]) + fragment("?::int", q.shape["w"]) >=
-    #           ^left and
-    #           fragment("?::int", q.shape["x"]) +
-    #             fragment("?::int", q.shape["w"]) <= ^right and
-    #           fragment("?::int", q.shape["y"]) +
-    #             fragment("?::int", q.shape["h"]) >= ^bottom and
-    #           fragment("?::int", q.shape["y"]) +
-    #             fragment("?::int", q.shape["h"]) <= ^top))
-    # )
-    # |> where(
-    #   [q],
-    #   fragment(
-    #     """
-    #     (
-    #       (?->>'type')::varchar = 'point' AND
-    #       (?->>'x')::integer >= ? AND
-    #       (?->>'x')::integer <= ? AND
-    #       (?->>'y')::integer >= ? AND
-    #       (?->>'y')::integer <= ?
-    #     )
-    #     """,
-    #     q.shape,
-    #     q.shape,
-    #     ^min_x,
-    #     q.shape,
-    #     ^max_x,
-    #     q.shape,
-    #     ^min_y,
-    #     q.shape,
-    #     ^max_y
-    #   ) or
-    #     ((fragment("(?->>'type')::varchar = 'line'", q.shape) and
-    #         ((fragment("(?->>'a'->>'x')::integer >= ?", q.shape, ^min_x) and
-    #             fragment("(?->>'a'->>'x')::integer <= ?", q.shape, ^max_x) and
-    #             fragment("(?->>'a'->>'y')::integer >= ?", q.shape, ^min_y) and
-    #             fragment("(?->>'a'->>'y')::integer <= ?", q.shape, ^max_y)) or
-    #            (fragment("(?->>'b'->>'x')::integer >= ?", q.shape, ^min_x) and
-    #               fragment("(?->>'b'->>'x')::integer <= ?", q.shape, ^max_x) and
-    #               fragment("(?->>'b'->>'y')::integer >= ?", q.shape, ^min_y) and
-    #               fragment("(?->>'b'->>'y')::integer <= ?", q.shape, ^max_y)))) or
-    #        nil)
-    # )
+  defp apply_filter(:artist_name, artist_names, queryable)
+       when is_list(artist_names) do
+    queryable
+    |> maybe_join(
+      :inner,
+      [picture],
+      artist in assoc(picture, :artist),
+      as: :artist
+    )
+    |> where([artist: artist], artist.name in ^artist_names)
+  end
+
+  defp apply_filter(:artist_country, artist_names, queryable)
+       when is_list(artist_names) do
+    queryable
+    |> maybe_join(
+      :inner,
+      [picture],
+      artist in assoc(picture, :artist),
+      as: :artist
+    )
+    |> where([artist: artist], artist.country in ^artist_names)
   end
 end
