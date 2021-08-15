@@ -21,6 +21,19 @@ defmodule WUE.Pictures.PictureTest do
   @point_params %{shape: %{type: "point", x: 1, y: 2}}
   @point %Shape.Point{x: 1, y: 2}
 
+  @line_params %{
+    shape: %{
+      type: "line",
+      a: %{x: 1, y: 2},
+      b: %{x: 3, y: 4}
+    }
+  }
+
+  @line %Shape.Line{
+    a: %Shape.Point{x: 1, y: 2},
+    b: %Shape.Point{x: 3, y: 4}
+  }
+
   defp stringify(%{} = data), do: data |> Jason.encode!() |> Jason.decode!()
 
   defp create(%{} = params) do
@@ -29,9 +42,10 @@ defmodule WUE.Pictures.PictureTest do
 
   describe "saving" do
     for {input, output} <- [
-          {@polygon_params, @polygon},
           {@box_params, @box},
-          {@point_params, @point}
+          {@line_params, @line},
+          {@point_params, @point},
+          {@polygon_params, @polygon}
         ] do
       @input input
       @output output
@@ -45,9 +59,10 @@ defmodule WUE.Pictures.PictureTest do
 
   describe "loading" do
     for {input, output} <- [
-          {@polygon_params, @polygon},
           {@box_params, @box},
-          {@point_params, @point}
+          {@line_params, @line},
+          {@point_params, @point},
+          {@polygon_params, @polygon}
         ] do
       @input input
       @output output
@@ -162,6 +177,35 @@ defmodule WUE.Pictures.PictureTest do
 
       assert {"point requires x and y fields, both of which are integers", _} =
                errors[:shape]
+    end
+
+    test "casts line" do
+      assert %{valid?: true} = changeset = Picture.changeset(@line_params)
+      assert Changeset.get_field(changeset, :shape) == @line
+    end
+
+    test "casts line with string keys" do
+      params = stringify(@line_params)
+      assert %{valid?: true} = changeset = Picture.changeset(params)
+      assert Changeset.get_field(changeset, :shape) == @line
+    end
+
+    test "requires both points on line" do
+      assert %{valid?: false, errors: errors} =
+               Picture.changeset(%{shape: %{type: "line"}})
+
+      assert {"line requires points a and b, each with an x and y coordinate",
+              _} = errors[:shape]
+    end
+
+    test "validates points on line" do
+      assert %{valid?: false, errors: errors} =
+               Picture.changeset(%{
+                 shape: %{type: "line", a: %{x: "a", y: "b"}, b: %{x: 1, y: 2}}
+               })
+
+      assert {"line requires points a and b, each with an x and y coordinate",
+              _} = errors[:shape]
     end
   end
 end
