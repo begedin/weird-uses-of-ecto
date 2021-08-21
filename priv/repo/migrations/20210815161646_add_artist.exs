@@ -1,4 +1,5 @@
 defmodule WUE.Repo.Migrations.AddArtist do
+  @moduledoc false
   use Ecto.Migration
 
   def change do

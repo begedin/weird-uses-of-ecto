@@ -61,9 +61,11 @@ defmodule WUE.Pictures.Picture do
 
   @derive {Jason.Encoder, only: [:shape]}
   schema "pictures" do
+    field(:name, :string, null: true)
     field(:shape, Pictures.Shape, read_after_writes: true)
 
     belongs_to(:artist, Pictures.Artist)
+    many_to_many(:albums, Pictures.Album, join_through: "pictures_albums")
   end
 
   @doc """
@@ -80,7 +82,7 @@ defmodule WUE.Pictures.Picture do
   @spec changeset(t, map) :: Changeset.t()
   def changeset(%__MODULE__{} = struct, %{} = params) do
     struct
-    |> Changeset.cast(params, [:shape])
+    |> Changeset.cast(params, [:name, :shape])
     |> Changeset.validate_required([:shape])
   end
 end

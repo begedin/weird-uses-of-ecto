@@ -1,4 +1,5 @@
 defmodule WUE.Repo.Migrations.AddPicture do
+  @moduledoc false
   use Ecto.Migration
 
   def change do

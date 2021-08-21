@@ -62,10 +62,12 @@ defmodule WUE.Pictures do
     |> Repo.insert!()
   end
 
+  @just_helper "Just a helper function, not really an example for anything."
+
   @doc """
   Used to create an artist.
 
-  Just a helper function, not really an example for anything.
+  #{@just_helper}
   """
   @spec create_artist!(map) :: Pictures.Artist.t()
   def create_artist!(%{} = params) do
@@ -101,5 +103,36 @@ defmodule WUE.Pictures do
   @spec batch_transpose(Pictures.BatchParams.t()) :: list(Pictures.Picture.t())
   def batch_transpose(%Pictures.BatchParams{} = params) do
     Pictures.BatchTransposePictures.call(params)
+  end
+
+  @doc """
+  Creates an album.
+
+  #{@just_helper}
+  """
+  @spec create_album!(map) :: Pictures.Album.t()
+  def create_album!(%{} = params) do
+    params
+    |> Pictures.Album.changeset()
+    |> Repo.insert!()
+  end
+
+  @doc """
+  Adds pictures matching the specified batch params into the specified album.
+
+  Serves as an example of using ecto with temp tables to speed up batch
+  preprocessing of data in large volumes, to speed up a slow operation which
+  is performed on a large number of items.
+  """
+  @spec add_pictures_to_album!(
+          Pictures.Album.t(),
+          Pictures.BatchParams.t()
+        ) :: {:ok, Pictures.AddPicturesToAlbum.result()}
+
+  def add_pictures_to_album!(
+        %Pictures.Album{} = album,
+        %Pictures.BatchParams{} = params
+      ) do
+    Pictures.AddPicturesToAlbum.call(album, params)
   end
 end
