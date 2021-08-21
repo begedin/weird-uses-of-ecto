@@ -17,7 +17,7 @@ defmodule WUEWeb.PictureController do
 
   def batch_transpose(conn, params) do
     with {:ok, params} <- Pictures.BatchParams.validate(params),
-         pictures <- WUE.Pictures.BatchTransposePictures.call(params) do
+         pictures <- WUE.Pictures.batch_transpose(params) do
       conn
       |> put_status(200)
       |> json(pictures)

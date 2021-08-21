@@ -1,9 +1,20 @@
 defmodule WUE.Pictures.BatchTransposePictures do
+  @moduledoc """
+  Use-case module in charge of performing a transpose operation on a batch of
+  pictures.
+
+  Serves as an example of how one interpolate and join on a list defined in
+  elixir, to perform an update operation in batch, where each item being updated
+  receives different attributes.
+  """
   import Ecto.Query, only: [join: 5, select: 3, update: 3]
 
   alias WUE.{Pictures, Repo}
 
+  @doc false
   def call(%Pictures.BatchParams{} = filter) do
+    # The data list contains new attributes for the item, where each of the
+    # attributes holds an id to join on.
     new_data =
       filter
       |> Pictures.list_pictures()

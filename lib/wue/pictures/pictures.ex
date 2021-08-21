@@ -62,6 +62,11 @@ defmodule WUE.Pictures do
     |> Repo.insert!()
   end
 
+  @doc """
+  Used to create an artist.
+
+  Just a helper function, not really an example for anything.
+  """
   @spec create_artist!(map) :: Pictures.Artist.t()
   def create_artist!(%{} = params) do
     params
@@ -69,8 +74,32 @@ defmodule WUE.Pictures do
     |> Repo.insert!()
   end
 
-  @spec list_pictures(map) :: list(Pictures.Picture.t())
-  def list_pictures(%{} = params) do
+  @doc """
+  Lists pictures matching the given filter. This is part of an example of how
+  a complex set of parameters, commonly used across the app, can be prevalidated
+  and converted into a struct, so further operations that use it can be made
+  simpler.
+
+  In this case, rather than receiving a dynamic map and filtering on that, this
+  function receives a well defined struct, guaranteed to be valid, because it
+  was already prevalidated using `WUE.Pictures.BatchParams.validate/1`
+  """
+  @spec list_pictures(Pictures.BatchParams.t()) :: list(Pictures.Picture.t())
+  def list_pictures(%Pictures.BatchParams{} = params) do
     Pictures.ListPictures.call(params)
+  end
+
+  @doc """
+  Performs a naive transpose operation on a batch of pictures matching the
+  given filter.
+
+  This is an example of passing in a list of attributes into an ecto update
+  operation, to join on.
+
+  See module for further documentation.
+  """
+  @spec batch_transpose(Pictures.BatchParams.t()) :: list(Pictures.Picture.t())
+  def batch_transpose(%Pictures.BatchParams{} = params) do
+    Pictures.BatchTransposePictures.call(params)
   end
 end
