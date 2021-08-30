@@ -1,4 +1,13 @@
 defmodule WUE.Pictures.Artist do
+  @moduledoc """
+  Schema module representing an artist of a picture. A picture can optionally
+  belong to a single artist.
+
+  An artist can have multiple pictures.
+
+  We need a basic association to better depict the advante certain uses of ecto
+  can provide.
+  """
   use Ecto.Schema
 
   alias Ecto.Changeset

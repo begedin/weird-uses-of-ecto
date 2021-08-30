@@ -106,7 +106,7 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
 
   # Again, just a query, this time as a source for deletion
   @spec cleanup :: Ecto.Query.t()
-  defp cleanup() do
+  defp cleanup do
     ranked_named =
       TempData
       |> where([temp], not is_nil(temp.picture_name))

@@ -16,6 +16,7 @@ defmodule WUEWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+  alias Ecto.Adapters.SQL
 
   using do
     quote do
@@ -32,10 +33,10 @@ defmodule WUEWeb.ConnCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(WUE.Repo)
+    :ok = SQL.Sandbox.checkout(WUE.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(WUE.Repo, {:shared, self()})
+      SQL.Sandbox.mode(WUE.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}

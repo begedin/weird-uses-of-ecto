@@ -142,47 +142,9 @@ defmodule WUE.Pictures.Filter do
   defp apply_filter(:overlaps, %Bounds{} = within, queryable) do
     %{min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y} = within
 
-    points =
-      Pictures.Picture
-      |> where([q], fragment("(?->>'type')::varchar", q.shape) == "point")
-      |> where([q], fragment("(?->>'x')::int", q.shape) >= ^min_x)
-      |> where([q], fragment("(?->>'x')::int", q.shape) <= ^max_x)
-      |> where([q], fragment("(?->>'y')::int", q.shape) >= ^min_y)
-      |> where([q], fragment("(?->>'y')::int", q.shape) <= ^max_y)
-
-    lines =
-      Pictures.Picture
-      |> where([q], fragment("(?->>'type')::varchar", q.shape) == "line")
-      |> where(
-        [q],
-        fragment("(?->'a'->>'x')::int", q.shape) >= ^min_x and
-          fragment("(?->'a'->>'x')::int", q.shape) <= ^max_x and
-          fragment("(?->'a'->>'y')::int", q.shape) >= ^min_y and
-          fragment("(?->'a'->>'y')::int", q.shape) <= ^max_y
-      )
-      |> or_where(
-        [q],
-        fragment("(?->'b'->>'x')::int", q.shape) >= ^min_x and
-          fragment("(?->'b'->>'x')::int", q.shape) <= ^max_x and
-          fragment("(?->'b'->>'y')::int", q.shape) >= ^min_y and
-          fragment("(?->'b'->>'y')::int", q.shape) <= ^max_y
-      )
-
-    boxes =
-      Pictures.Picture
-      |> where(
-        [q],
-        fragment("(?->>'type')::varchar", q.shape) == "box"
-      )
-      |> where(
-        [q],
-        not (fragment("(?->>'x')::int", q.shape) >= ^max_x or
-               fragment("(?->>'x')::int + (?->>'w')::int", q.shape, q.shape) <=
-                 ^min_x or
-               (fragment("(?->>'y')::int", q.shape) >= ^max_y and
-                  fragment("(?->>'y')::int + (?->>'h')::int", q.shape, q.shape) <=
-                    ^min_y))
-      )
+    points = point_query(min_x, min_y, max_x, max_y)
+    lines = line_query(min_x, min_y, max_x, max_y)
+    boxes = box_query(min_x, min_y, max_x, max_y)
 
     queryable
     |> join(:left, [q], matched in ^subquery(points),
@@ -225,5 +187,53 @@ defmodule WUE.Pictures.Filter do
       as: :artist
     )
     |> where([artist: artist], artist.country in ^artist_names)
+  end
+
+  @spec point_query(integer, integer, integer, integer) :: Ecto.Query.t()
+  defp point_query(min_x, min_y, max_x, max_y) do
+    Pictures.Picture
+    |> where([q], fragment("(?->>'type')::varchar", q.shape) == "point")
+    |> where([q], fragment("(?->>'x')::int", q.shape) >= ^min_x)
+    |> where([q], fragment("(?->>'x')::int", q.shape) <= ^max_x)
+    |> where([q], fragment("(?->>'y')::int", q.shape) >= ^min_y)
+    |> where([q], fragment("(?->>'y')::int", q.shape) <= ^max_y)
+  end
+
+  @spec line_query(integer, integer, integer, integer) :: Ecto.Query.t()
+  defp line_query(min_x, min_y, max_x, max_y) do
+    Pictures.Picture
+    |> where([q], fragment("(?->>'type')::varchar", q.shape) == "line")
+    |> where(
+      [q],
+      fragment("(?->'a'->>'x')::int", q.shape) >= ^min_x and
+        fragment("(?->'a'->>'x')::int", q.shape) <= ^max_x and
+        fragment("(?->'a'->>'y')::int", q.shape) >= ^min_y and
+        fragment("(?->'a'->>'y')::int", q.shape) <= ^max_y
+    )
+    |> or_where(
+      [q],
+      fragment("(?->'b'->>'x')::int", q.shape) >= ^min_x and
+        fragment("(?->'b'->>'x')::int", q.shape) <= ^max_x and
+        fragment("(?->'b'->>'y')::int", q.shape) >= ^min_y and
+        fragment("(?->'b'->>'y')::int", q.shape) <= ^max_y
+    )
+  end
+
+  @spec box_query(integer, integer, integer, integer) :: Ecto.Query.t()
+  defp box_query(min_x, min_y, max_x, max_y) do
+    Pictures.Picture
+    |> where(
+      [q],
+      fragment("(?->>'type')::varchar", q.shape) == "box"
+    )
+    |> where(
+      [q],
+      not (fragment("(?->>'x')::int", q.shape) >= ^max_x or
+             fragment("(?->>'x')::int + (?->>'w')::int", q.shape, q.shape) <=
+               ^min_x or
+             (fragment("(?->>'y')::int", q.shape) >= ^max_y and
+                fragment("(?->>'y')::int + (?->>'h')::int", q.shape, q.shape) <=
+                  ^min_y))
+    )
   end
 end

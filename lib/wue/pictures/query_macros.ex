@@ -1,4 +1,8 @@
 defmodule WUE.Pictures.QueryMacros do
+  @moduledoc """
+  Badly named and placed module, served to hold macro(s) used in the
+  `WUE.Pictures` context.
+  """
   import Ecto.Query, only: [join: 5]
   alias Ecto.Query
 
