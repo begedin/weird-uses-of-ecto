@@ -73,6 +73,15 @@ defmodule WUE.Pictures.Filter do
     embeds_one(:overlaps, Bounds)
   end
 
+  @doc """
+  Defines a changeset for a filter strcuture which allows endpoints to define
+  a batch of pictures on which an operation will run.
+
+  The filter is defined as at least one, or more, supported keys. If it has no
+  supported keys, it explicitly must define a `select_all: true`, to avoid
+  accidentally running an operation on all pictures in the database.
+  """
+  @spec changeset(t, map) :: Changeset.t()
   def changeset(%__MODULE__{} = struct, params) do
     struct
     |> Changeset.cast(params, [
@@ -85,6 +94,7 @@ defmodule WUE.Pictures.Filter do
     |> validate_explicit_all()
   end
 
+  @spec validate_explicit_all(Changeset.t()) :: Changeset.t()
   defp validate_explicit_all(%Changeset{} = changeset) do
     case Changeset.get_field(changeset, :select_all) do
       true -> changeset
@@ -92,6 +102,7 @@ defmodule WUE.Pictures.Filter do
     end
   end
 
+  @spec require_any_filter_key(Changeset.t()) :: Changeset.t()
   defp require_any_filter_key(%Changeset{} = changeset) do
     fields =
       :fields
@@ -121,6 +132,7 @@ defmodule WUE.Pictures.Filter do
     |> Enum.reduce(queryable, fn {k, v}, acc -> apply_filter(k, v, acc) end)
   end
 
+  @spec apply_filter(atom, term, Ecto.Queryable.t()) :: Ecto.Queryable.t()
   defp apply_filter(:select_all, _, queryable), do: queryable
 
   defp apply_filter(:type, type, queryable) do

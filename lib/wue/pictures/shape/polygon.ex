@@ -19,6 +19,7 @@ defmodule WUE.Pictures.Shape.Polygon do
     embeds_many(:path, Shape.Point)
   end
 
+  @spec cast(map) :: {:ok, t} | {:error, message: String.t()}
   def cast(%{} = params) do
     %__MODULE__{}
     |> changeset(params)
@@ -27,6 +28,8 @@ defmodule WUE.Pictures.Shape.Polygon do
 
   @keys [:path]
 
+  @doc false
+  @spec changeset(t | Changeset.t(), map) :: Changeset.t()
   def changeset(%_{} = struct, %{} = params) do
     struct
     |> Changeset.cast(params, [])
@@ -34,6 +37,7 @@ defmodule WUE.Pictures.Shape.Polygon do
     |> Changeset.validate_required(@keys)
   end
 
+  @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
   defp resolve(%Changeset{valid?: false, errors: [path: {"can't be blank", _}]}) do
     {:error, message: "polygon requires a path, which is a list of points"}
   end
@@ -61,6 +65,7 @@ defmodule WUE.Pictures.Shape.Polygon do
     {:ok, Changeset.apply_changes(changeset)}
   end
 
+  @spec dump(t) :: map
   def dump(%__MODULE__{path: path}) do
     %{
       path: Enum.map(path, &(&1 |> Shape.Point.dump() |> Map.delete(:type))),
@@ -68,6 +73,7 @@ defmodule WUE.Pictures.Shape.Polygon do
     }
   end
 
+  @spec load(map) :: t
   def load(%{"path" => path}) do
     %__MODULE__{path: Enum.map(path, &Shape.Point.load/1)}
   end

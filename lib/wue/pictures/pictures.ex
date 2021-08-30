@@ -4,6 +4,7 @@ defmodule WUE.Pictures do
   various potentially weird uses of Ecto.
   """
 
+  alias Ecto.Changeset
   alias WUE.{Pictures, Repo}
 
   @type shape ::
@@ -58,7 +59,7 @@ defmodule WUE.Pictures do
   def create_picture!(artist, %{} = params) do
     params
     |> Pictures.Picture.changeset()
-    |> Ecto.Changeset.put_assoc(:artist, artist)
+    |> Changeset.put_assoc(:artist, artist)
     |> Repo.insert!()
   end
 
@@ -74,6 +75,36 @@ defmodule WUE.Pictures do
     params
     |> Pictures.Artist.changeset()
     |> Repo.insert!()
+  end
+
+  @doc """
+  Validates parames received in API endpoints which filter or otherwise act on a
+  batch of pictures.
+
+  An example of using Ecto embedded schemas as a params validator layer for an
+  API.
+
+  This approach is well suited for an API which defines multiple actions on a
+  batch of items, where part of the expected payload is shared between the
+  endpoints. A good example is use of a common filter structure across
+  endpoints.
+
+  ### Some advantages of this approach
+
+  - the structure of params is centralized both in definition as well as
+    validation
+  - batch operation functions that follow can receive a well-defined struct as
+    their primary argument, rather than a loosely defined map
+  - due to the struct and the fact that the validation step can take care of
+    common edge-cases, the batch operation function can be written in a simpler
+    way
+  - the api can simply render a typical 422 error response if the given params
+    structure turns out invalid
+  """
+  @spec validate_batch_params(map) ::
+          {:ok, Pictures.BatchParams.t()} | {:error, Changeset.t()}
+  def validate_batch_params(%{} = params) do
+    Pictures.BatchParams.validate(params)
   end
 
   @doc """

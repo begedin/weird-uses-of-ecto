@@ -1,11 +1,12 @@
 defmodule WUE.Pictures.Transpose do
   @moduledoc """
-  Use-case module.
-
   Does a naive "transpose" operation depending on the type of shape given to it.
 
   Not necesarily accurate, just exists to be an example of a relatively complex
   operation being done on an item.
+
+  The actual example of a creative ecto use is documented in
+  `WUE.Pictures.BatchTransposePictures`
   """
   alias WUE.Pictures
 

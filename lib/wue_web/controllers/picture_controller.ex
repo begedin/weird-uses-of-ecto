@@ -7,8 +7,8 @@ defmodule WUEWeb.PictureController do
   action_fallback(:fallback)
 
   def index(conn, params) do
-    with {:ok, params} <- Pictures.BatchParams.validate(params),
-         pictures <- WUE.Pictures.ListPictures.call(params) do
+    with {:ok, params} <- Pictures.validate_batch_params(params),
+         pictures <- WUE.Pictures.list_pictures(params) do
       conn
       |> put_status(200)
       |> json(pictures)
@@ -16,7 +16,7 @@ defmodule WUEWeb.PictureController do
   end
 
   def batch_transpose(conn, params) do
-    with {:ok, params} <- Pictures.BatchParams.validate(params),
+    with {:ok, params} <- Pictures.validate_batch_params(params),
          pictures <- WUE.Pictures.batch_transpose(params) do
       conn
       |> put_status(200)

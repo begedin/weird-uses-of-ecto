@@ -12,6 +12,7 @@ defmodule WUE.Pictures.BatchTransposePictures do
   alias WUE.{Pictures, Repo}
 
   @doc false
+  @spec call(Pictures.BatchParams.t()) :: list(Pictures.Picture.t())
   def call(%Pictures.BatchParams{} = filter) do
     # The data list contains new attributes for the item, where each of the
     # attributes holds an id to join on.

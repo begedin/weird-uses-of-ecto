@@ -20,6 +20,7 @@ defmodule WUE.Pictures.Shape.Point do
     field(:y, :integer, null: false)
   end
 
+  @spec cast(map) :: {:ok, t} | {:error, message: String.t()}
   def cast(%{} = params) do
     %__MODULE__{}
     |> changeset(params)
@@ -28,12 +29,15 @@ defmodule WUE.Pictures.Shape.Point do
 
   @keys [:x, :y]
 
+  @doc false
+  @spec changeset(t | Changeset.t(), map) :: Changeset.t()
   def changeset(%_{} = struct, %{} = params) do
     struct
     |> Changeset.cast(params, @keys)
     |> Changeset.validate_required(@keys)
   end
 
+  @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
   defp resolve(%Changeset{valid?: false}) do
     {:error,
      message: "point requires x and y fields, both of which are integers"}
@@ -43,10 +47,12 @@ defmodule WUE.Pictures.Shape.Point do
     {:ok, Changeset.apply_changes(changeset)}
   end
 
+  @spec dump(t) :: map
   def dump(%__MODULE__{x: x, y: y}) do
     %{x: x, y: y, type: "point"}
   end
 
+  @spec load(map) :: t
   def load(%{"x" => x, "y" => y}) do
     %__MODULE__{x: x, y: y}
   end

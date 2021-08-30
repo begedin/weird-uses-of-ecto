@@ -19,12 +19,15 @@ defmodule WUE.Pictures.Shape.Line do
     embeds_one(:b, Shape.Point)
   end
 
+  @spec cast(map) :: {:ok, t} | {:error, message: String.t()}
   def cast(%{} = params) do
     %__MODULE__{}
     |> changeset(params)
     |> resolve()
   end
 
+  @doc false
+  @spec changeset(t | Changeset.t(), map) :: Changeset.t()
   def changeset(%_{} = struct, %{} = params) do
     struct
     |> Changeset.cast(params, [])
@@ -33,6 +36,7 @@ defmodule WUE.Pictures.Shape.Line do
     |> Changeset.cast_embed(:b, required: true)
   end
 
+  @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
   def resolve(%Changeset{valid?: false}) do
     {:error,
      message: "line requires points a and b, each with an x and y coordinate"}
@@ -42,10 +46,12 @@ defmodule WUE.Pictures.Shape.Line do
     {:ok, Changeset.apply_changes(changeset)}
   end
 
+  @spec dump(t) :: map
   def dump(%__MODULE__{a: a, b: b}) do
     %{a: Shape.Point.dump(a), b: Shape.Point.dump(b), type: "line"}
   end
 
+  @spec load(map) :: t
   def load(%{"a" => a, "b" => b}) do
     %__MODULE__{a: Shape.Point.load(a), b: Shape.Point.load(b)}
   end

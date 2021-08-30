@@ -20,6 +20,7 @@ defmodule WUE.Pictures.Shape.Box do
     field(:h, :integer, null: false)
   end
 
+  @spec cast(map) :: {:ok, t} | {:error, message: String.t()}
   def cast(%{} = params) do
     %__MODULE__{}
     |> changeset(params)
@@ -28,12 +29,15 @@ defmodule WUE.Pictures.Shape.Box do
 
   @keys [:x, :y, :w, :h]
 
+  @doc false
+  @spec changeset(t | Changeset.t(), map) :: Changeset.t()
   def changeset(%_{} = struct, %{} = params) do
     struct
     |> Changeset.cast(params, @keys)
     |> Changeset.validate_required(@keys)
   end
 
+  @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
   def resolve(%Changeset{valid?: false}) do
     fields = Enum.join(@keys, ", ")
 
@@ -45,10 +49,12 @@ defmodule WUE.Pictures.Shape.Box do
     {:ok, Changeset.apply_changes(changeset)}
   end
 
+  @spec dump(t) :: map
   def dump(%__MODULE__{x: x, y: y, w: w, h: h}) do
     %{x: x, y: y, w: w, h: h, type: "box"}
   end
 
+  @spec load(map) :: t
   def load(%{"x" => x, "y" => y, "w" => w, "h" => h}) do
     %__MODULE__{x: x, y: y, w: w, h: h}
   end
