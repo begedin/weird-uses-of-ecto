@@ -38,27 +38,9 @@ defmodule WUE.Pictures.Shape.Polygon do
   end
 
   @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
-  defp resolve(%Changeset{valid?: false, errors: [path: {"can't be blank", _}]}) do
-    {:error, message: "polygon requires a path, which is a list of points"}
-  end
-
-  defp resolve(%Changeset{valid?: false, errors: []} = changeset) do
-    errors =
-      changeset.changes.path
-      |> Enum.with_index()
-      |> Enum.map(fn
-        {%{valid?: true}, index} ->
-          "Point #{index} is valid."
-
-        {%{valid?: false} = point_changeset, index} ->
-          Enum.map(point_changeset.errors, fn {key, {message, _}} ->
-            "Point #{index} is invalid, #{key} #{message}."
-          end)
-      end)
-      |> List.flatten()
-
-    message = Enum.join(["Polygon contains invalid points." | errors], " ")
-    {:error, message: message}
+  defp resolve(%Changeset{valid?: false} = changeset) do
+    extra_errors = Shape.traverse_errors(changeset)
+    {:error, extra_errors: extra_errors, message: "is invalid"}
   end
 
   defp resolve(%Changeset{valid?: true} = changeset) do

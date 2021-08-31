@@ -111,7 +111,7 @@ defmodule Test do
       assert errors[:shape] == {
                "is invalid",
                [
-                 errors: %{
+                 extra_errors: %{
                    h: [{"can't be blank", [validation: :required]}],
                    w: [{"can't be blank", [validation: :required]}],
                    x: [{"can't be blank", [validation: :required]}],
@@ -138,7 +138,11 @@ defmodule Test do
 
       assert errors[:shape] == {
                "is invalid",
-               [errors: %{path: [{"can't be blank", [validation: :required]}]}]
+               [
+                 extra_errors: %{
+                   path: [{"can't be blank", [validation: :required]}]
+                 }
+               ]
              }
     end
 
@@ -160,7 +164,7 @@ defmodule Test do
       assert errors[:shape] ==
                {"is invalid",
                 [
-                  errors: %{
+                  extra_errors: %{
                     path: [
                       %{},
                       %{
@@ -195,7 +199,7 @@ defmodule Test do
       assert errors[:shape] == {
                "is invalid",
                [
-                 errors: %{
+                 extra_errors: %{
                    x: [{"can't be blank", [validation: :required]}],
                    y: [{"can't be blank", [validation: :required]}]
                  }
@@ -210,7 +214,7 @@ defmodule Test do
       assert errors[:shape] == {
                "is invalid",
                [
-                 errors: %{
+                 extra_errors: %{
                    x: [{"is invalid", [type: :integer, validation: :cast]}],
                    y: [{"is invalid", [type: :integer, validation: :cast]}]
                  }
@@ -236,7 +240,7 @@ defmodule Test do
       assert errors[:shape] == {
                "is invalid",
                [
-                 errors: %{
+                 extra_errors: %{
                    a: [{"can't be blank", [validation: :required]}],
                    b: [{"can't be blank", [validation: :required]}]
                  }
@@ -253,7 +257,7 @@ defmodule Test do
       assert errors[:shape] == {
                "is invalid",
                [
-                 errors: %{
+                 extra_errors: %{
                    a: %{
                      x: [{"is invalid", [type: :integer, validation: :cast]}],
                      y: [{"is invalid", [type: :integer, validation: :cast]}]
@@ -261,74 +265,6 @@ defmodule Test do
                  }
                ]
              }
-    end
-  end
-
-  describe "traverse errors" do
-    test "traverses box errors" do
-      params = %{
-        shape: %{
-          type: "polygon",
-          path: [
-            %{x: "a", y: "b"},
-            %{x: 1},
-            %{y: 2}
-          ]
-        }
-      }
-
-      assert params |> PictureV2.changeset() |> PictureV2.traverse_errors() ==
-               %{
-                 shape: %{
-                   path: [
-                     %{
-                       x: [{"is invalid", [type: :integer, validation: :cast]}],
-                       y: [{"is invalid", [type: :integer, validation: :cast]}]
-                     },
-                     %{y: [{"can't be blank", [validation: :required]}]},
-                     %{x: [{"can't be blank", [validation: :required]}]}
-                   ]
-                 }
-               }
-    end
-
-    test "traverses line errors" do
-      params = %{
-        shape: %{
-          type: "line",
-          a: %{x: "a", y: "b"},
-          b: %{x: 1}
-        }
-      }
-
-      assert params |> PictureV2.changeset() |> PictureV2.traverse_errors() ==
-               %{
-                 shape: %{
-                   a: %{x: ["is invalid"], y: ["is invalid"]},
-                   b: %{y: ["can't be blank"]}
-                 }
-               }
-    end
-
-    test "traverses point errors" do
-      params = %{shape: %{type: "point"}}
-
-      assert params |> PictureV2.changeset() |> PictureV2.traverse_errors() ==
-               %{shape: %{x: ["can't be blank"], y: ["can't be blank"]}}
-    end
-
-    test "traverses polygon errors" do
-      params = %{shape: %{type: "box", x: "a", w: "b"}}
-
-      assert params |> PictureV2.changeset() |> PictureV2.traverse_errors() ==
-               %{
-                 shape: %{
-                   h: ["can't be blank"],
-                   w: ["is invalid"],
-                   x: ["is invalid"],
-                   y: ["can't be blank"]
-                 }
-               }
     end
   end
 end

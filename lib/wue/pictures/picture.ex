@@ -1,9 +1,29 @@
 defmodule WUE.Pictures.Picture do
   @moduledoc """
-  Example of using ecto to achieve a polymorphic embed
+  Example of using a custom ecto type to achieve a polymorphic embed
 
   The picture is a record with just one field, `:shape` which is defined using
   a custom ecto type.
+
+  This approach allows us to
+
+  - load the data from the db into one of several potentional structs, depending
+    on the polymorphic type
+  - automatically cast the data s the correct type by simply relying on regular
+    casting infrastructure
+  - render custom, deeply nested errors, for individual fields within the
+    polymorphic embed
+
+  On the surface, this seems like the superior approach to ne defined in
+  `WUE.Pictures.PictureV2`. If the opposite turns out to be true, this
+  documentation will be updated.
+
+  The only disadvantage seems to be the need for `:read_after_writes` explained
+  in it's own section here. Even if we were to remove that feature, we would
+  still end up with something that is functionally equivalent to the v2
+  approach.
+
+  ## Database format
 
   In the database, this field is stored as one of the following
 
@@ -28,6 +48,7 @@ defmodule WUE.Pictures.Picture do
   }
   ```
 
+  # Runtime format
 
   When the record is loaded, however, the field exists as a clearly typed struct.
 
@@ -51,6 +72,22 @@ defmodule WUE.Pictures.Picture do
   This is needed to ensure the record is reloaded as a struct upon insert or
   update. Without this option, after those actions execute, the shape field will
   stay as the original map, with a type field.
+
+  ## Examples
+
+    iex>
+    ...>  %{shape: %{type: "box", x: "a", w: "b"}}
+    ...>  |> WUE.Pictures.Picture.changeset()
+    ...>  |> WUE.Pictures.Shape.traverse_errors()
+
+    %{
+      shape: %{
+        h: ["can't be blank"],
+        w: ["is invalid"],
+        x: ["is invalid"],
+        y: ["can't be blank"]
+      }
+    }
   """
 
   use Ecto.Schema

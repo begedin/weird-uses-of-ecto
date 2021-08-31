@@ -37,9 +37,9 @@ defmodule WUE.Pictures.Shape.Line do
   end
 
   @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
-  def resolve(%Changeset{valid?: false}) do
-    {:error,
-     message: "line requires points a and b, each with an x and y coordinate"}
+  def resolve(%Changeset{valid?: false} = changeset) do
+    extra_errors = Shape.traverse_errors(changeset)
+    {:error, extra_errors: extra_errors, message: "is invalid"}
   end
 
   def resolve(%Changeset{valid?: true} = changeset) do

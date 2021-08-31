@@ -5,28 +5,13 @@ defmodule WUE.Pictures.Shape do
   Depending on an indentifier field within the params, it will cast the
   remaining params using one of several different embedded schemas.
 
-  # Advantages of this method
-
-  - the shape type is easily customizable, and simple to implement
-  - adding more shapes is as straight forward as a new `cast/1` clause
-  - the only place where raw values are visible are
-    - in the database
-    - when accepting params from the frontend
-  - everything else uses structs
-
-  # Disadvantages of this method
-
-  - There can only be a single error on the shape field
-  - It's not possible to nest errors
-
-  # Conclusion
-
-  - This approach is good for a technically oriented API, but not great if we
-    need to support user-friendly, per subfield errors out of the box
-  - It's always possible to "decide" the error field is actually an encounted,
-    more complex error map, or list, etc.
+  It initially seemed only simple error messages were possible with this
+  approach, but in the current form, we are able to do anythign we are doing
+  in the approach described in `WUE.Pictures.PictureV2`.
   """
   use Ecto.Type
+
+  alias Ecto.Changeset
   alias WUE.{Pictures, Pictures.Shape}
 
   @shapes ["box", "line", "point", "polygon"]
@@ -93,7 +78,6 @@ defmodule WUE.Pictures.Shape do
 
   This is effectively the reverse of `dump/1`
   """
-
   @impl Ecto.Type
   @spec load(map) :: {:ok, Pictures.shape()}
   def load(%{"type" => "point"} = data) do
@@ -110,5 +94,62 @@ defmodule WUE.Pictures.Shape do
 
   def load(%{"type" => "polygon"} = data) do
     {:ok, Shape.Polygon.load(data)}
+  end
+
+  @doc """
+  Error traversal function specifically designed to convert the :extra_errors
+  key of a `WUE.Pictures.{Picture,PictureV2}` changeset.
+
+  The `WUEWeb.ErrorView` is in charge of calling this when necessary.
+
+  This is what renders the :extra_errors conent in the same way one would
+  regularly render errors on a normal ecto embed.
+  """
+  @spec traverse_errors(Changeset.t()) :: map
+  def traverse_errors(%Changeset{} = changeset) do
+    traversed =
+      Changeset.traverse_errors(changeset, fn {msg, opts} ->
+        if opts[:extra_errors] do
+          opts[:extra_errors]
+          |> Enum.map(&do_traverse_errors/1)
+          |> Map.new()
+        else
+          WUEWeb.ErrorHelpers.translate_error({msg, opts})
+        end
+      end)
+
+    case Map.get(traversed, :shape) do
+      nil -> traversed
+      [shape_errors] -> Map.put(traversed, :shape, shape_errors)
+    end
+  end
+
+  @spec do_traverse_errors(
+          {atom, map}
+          | {atom, list}
+          | map
+          | {String.t(), Keyword.t()}
+        ) ::
+          {atom, map}
+          | {atom, list}
+          | map
+          | {String.t(), Keyword.t()}
+  defp do_traverse_errors(error) do
+    case error do
+      {field, %{} = value} when is_atom(field) ->
+        {field, value |> Enum.map(&do_traverse_errors/1) |> Map.new()}
+
+      {field, [msg]} when is_atom(field) and is_binary(msg) ->
+        {field, [msg]}
+
+      {field, value} when is_atom(field) and is_list(value) ->
+        {field, Enum.map(value, &do_traverse_errors/1)}
+
+      %{} = errors ->
+        errors |> Enum.map(&do_traverse_errors/1) |> Map.new()
+
+      {msg, opts} when is_binary(msg) ->
+        WUEWeb.ErrorHelpers.translate_error({msg, opts})
+    end
   end
 end

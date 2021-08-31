@@ -5,6 +5,8 @@ defmodule WUE.Pictures.PictureTest do
   alias Ecto.Changeset
   alias WUE.Pictures.{Picture, Shape}
 
+  doctest WUE.Pictures.Picture
+
   @polygon_params %{
     shape: %{type: "polygon", path: [%{x: 1, y: 1}, %{x: 2, y: 2}]}
   }
@@ -104,8 +106,14 @@ defmodule WUE.Pictures.PictureTest do
       assert %{valid?: false, errors: errors} =
                Picture.changeset(%{shape: %{type: "box"}})
 
-      assert {"box requires the fields x, y, w, h, which are all integers", _} =
-               errors[:shape]
+      assert {"is invalid", opts} = errors[:shape]
+
+      assert opts[:extra_errors] == %{
+               h: ["can't be blank"],
+               w: ["can't be blank"],
+               x: ["can't be blank"],
+               y: ["can't be blank"]
+             }
     end
 
     test "casts polygon" do
@@ -123,8 +131,9 @@ defmodule WUE.Pictures.PictureTest do
       assert %{valid?: false, errors: errors} =
                Picture.changeset(%{shape: %{type: "polygon"}})
 
-      assert {"polygon requires a path, which is a list of points", _} =
-               errors[:shape]
+      assert {"is invalid", opts} = errors[:shape]
+
+      assert opts[:extra_errors] == %{path: ["can't be blank"]}
     end
 
     test "validates each polygon point" do
@@ -142,14 +151,17 @@ defmodule WUE.Pictures.PictureTest do
                  }
                })
 
-      assert {message, _} = errors[:shape]
-      assert message =~ "Polygon contains invalid points"
-      assert message =~ "Point 0 is valid"
-      assert message =~ "Point 1 is invalid, x is invalid"
-      assert message =~ "Point 2 is invalid, y can't be blank"
-      assert message =~ "Point 3 is invalid, x can't be blank"
-      assert message =~ "Point 4 is invalid, x can't be blank"
-      assert message =~ "Point 4 is invalid, y can't be blank"
+      assert {"is invalid", opts} = errors[:shape]
+
+      assert opts[:extra_errors] == %{
+               path: [
+                 %{},
+                 %{x: ["is invalid"]},
+                 %{y: ["can't be blank"]},
+                 %{x: ["can't be blank"]},
+                 %{x: ["can't be blank"], y: ["can't be blank"]}
+               ]
+             }
     end
 
     test "casts point" do
@@ -167,16 +179,20 @@ defmodule WUE.Pictures.PictureTest do
       assert %{valid?: false, errors: errors} =
                Picture.changeset(%{shape: %{type: "point"}})
 
-      assert {"point requires x and y fields, both of which are integers", _} =
-               errors[:shape]
+      assert {"is invalid", opts} = errors[:shape]
+
+      assert opts[:extra_errors] == %{
+               x: ["can't be blank"],
+               y: ["can't be blank"]
+             }
     end
 
     test "validates x and y are integers" do
       assert %{valid?: false, errors: errors} =
                Picture.changeset(%{shape: %{type: "point", x: "a", y: "b"}})
 
-      assert {"point requires x and y fields, both of which are integers", _} =
-               errors[:shape]
+      assert {"is invalid", opts} = errors[:shape]
+      assert opts[:extra_errors] == %{x: ["is invalid"], y: ["is invalid"]}
     end
 
     test "casts line" do
@@ -194,8 +210,12 @@ defmodule WUE.Pictures.PictureTest do
       assert %{valid?: false, errors: errors} =
                Picture.changeset(%{shape: %{type: "line"}})
 
-      assert {"line requires points a and b, each with an x and y coordinate",
-              _} = errors[:shape]
+      assert {"is invalid", opts} = errors[:shape]
+
+      assert opts[:extra_errors] == %{
+               a: ["can't be blank"],
+               b: ["can't be blank"]
+             }
     end
 
     test "validates points on line" do
@@ -204,8 +224,11 @@ defmodule WUE.Pictures.PictureTest do
                  shape: %{type: "line", a: %{x: "a", y: "b"}, b: %{x: 1, y: 2}}
                })
 
-      assert {"line requires points a and b, each with an x and y coordinate",
-              _} = errors[:shape]
+      assert {"is invalid", opts} = errors[:shape]
+
+      assert opts[:extra_errors] == %{
+               a: %{x: ["is invalid"], y: ["is invalid"]}
+             }
     end
   end
 end

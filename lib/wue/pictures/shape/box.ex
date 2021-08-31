@@ -8,6 +8,7 @@ defmodule WUE.Pictures.Shape.Box do
 
   use Ecto.Schema
   alias Ecto.Changeset
+  alias WUE.Pictures.Shape
 
   @type t :: %__MODULE__{}
 
@@ -38,11 +39,9 @@ defmodule WUE.Pictures.Shape.Box do
   end
 
   @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
-  def resolve(%Changeset{valid?: false}) do
-    fields = Enum.join(@keys, ", ")
-
-    {:error,
-     message: "box requires the fields #{fields}, which are all integers"}
+  def resolve(%Changeset{valid?: false} = changeset) do
+    extra_errors = Shape.traverse_errors(changeset)
+    {:error, extra_errors: extra_errors, message: "is invalid"}
   end
 
   def resolve(%Changeset{valid?: true} = changeset) do

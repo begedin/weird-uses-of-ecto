@@ -145,9 +145,12 @@ defmodule WUEWeb.PictureControllerTest do
 
       assert conn |> post(@path, params) |> json_response(422) == %{
                "errors" => %{
-                 "shape" => [
-                   "box requires the fields x, y, w, h, which are all integers"
-                 ]
+                 "shape" => %{
+                   "h" => ["can't be blank"],
+                   "w" => ["can't be blank"],
+                   "x" => ["is invalid"],
+                   "y" => ["can't be blank"]
+                 }
                }
              }
     end

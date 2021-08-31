@@ -1,27 +1,34 @@
 defmodule WUE.Pictures.PictureV2 do
   @moduledoc """
-  Alternative approach to polymorphic embed, bot with pros as well as cons
-  compared to a custom ecto type approach.
+  Alternative approach to polymorphic embed. This one defines the shape field as
+  a plain map, but uses the same embedded schemas as V1 to cast the params
+  depending on the `"type"` field.
 
-  In this approach, the field is defined as a plain map, so works with plain
-  string (or atom) keys.
+  Once the shape is cast and is deemed valid, it is converted back to a map,
+  before being persisted to the database.
 
-  However, internally, we use the same shape embedded schema structs and
-  changesets to cast and eventually save the data.
+  Initially, this was thought to be the only way to achieve a custom, deeply
+  nested error structure, but as it turns out, this is also possible with the
+  custom  type approach defined in
 
-  The advantage is, other than the plain error message, we are also able to
-  store additionall information onto the validation error, inside an `:error`
-  key of the validation error options field.
+  ```
+  WUE.Pictures.Picture
+  WUE.Pictures.Shape
+  ```
 
-  We can then use this additional information to render more complex error
-  messages to the frontend, using `Ecto.Changeset.traverse_errors`.
+
+
+  Thus, for most intents, the custom type approach seems superior.
+
+  The only advantage here is that there is no need for `:read_after_writes`, but
+  that also means that at runtime, the field is treated as a plain map.
 
   ## Examples
 
     iex>
     ...>  %{shape: %{type: "box", x: "a", w: "b"}}
     ...>  |> WUE.Pictures.PictureV2.changeset()
-    ...>  |> WUE.Pictures.PictureV2.traverse_errors()
+    ...>  |> WUE.Pictures.Shape.traverse_errors()
 
     %{
       shape: %{
@@ -75,7 +82,10 @@ defmodule WUE.Pictures.PictureV2 do
 
       %{valid?: false} = shape_changeset ->
         errors = collect_errors(shape_changeset)
-        Changeset.add_error(changeset, :shape, "is invalid", errors: errors)
+
+        Changeset.add_error(changeset, :shape, "is invalid",
+          extra_errors: errors
+        )
 
       _ ->
         Changeset.add_error(changeset, :shape, "is invalid")
@@ -121,56 +131,5 @@ defmodule WUE.Pictures.PictureV2 do
     Changeset.traverse_errors(shape_changeset, fn _c, _field, {msg, opts} ->
       {msg, opts}
     end)
-  end
-
-  @doc """
-  Error traversal function specifically designed to convert the extra :errors
-  key which is attached as an option to the shape field error of the PictureV2
-  changeset, into a typical map used to render errors via an API response.
-
-  The error view should match on the struct of the changeset.data field and
-  call this function if the struct is `WUE.Pictures.PictureV2`.
-  """
-  @spec traverse_errors(Changeset.t()) :: map
-  def traverse_errors(%Changeset{} = changeset) do
-    traversed =
-      Changeset.traverse_errors(changeset, fn
-        {_msg, errors: errors} ->
-          errors |> Enum.map(&do_traverse_errors/1) |> Map.new()
-
-        {msg, opts} ->
-          WUEWeb.ErrorHelpers.translate_error({msg, opts})
-      end)
-
-    case Map.get(traversed, :shape) do
-      nil -> traversed
-      [shape_errors] -> Map.put(traversed, :shape, shape_errors)
-    end
-  end
-
-  @spec do_traverse_errors(
-          {atom, map}
-          | {atom, list}
-          | map
-          | {String.t(), Keyword.t()}
-        ) ::
-          {atom, map}
-          | {atom, list}
-          | map
-          | {String.t(), Keyword.t()}
-  defp do_traverse_errors({field, value})
-       when is_atom(field) and is_map(value) do
-    {field, value |> Enum.map(&do_traverse_errors/1) |> Map.new()}
-  end
-
-  defp do_traverse_errors({field, value})
-       when is_atom(field) and is_list(value) do
-    {field, Enum.map(value, &do_traverse_errors/1)}
-  end
-
-  defp do_traverse_errors(%{} = errors), do: errors
-
-  defp do_traverse_errors({msg, opts}) when is_binary(msg) and is_list(opts) do
-    WUEWeb.ErrorHelpers.translate_error({msg, opts})
   end
 end

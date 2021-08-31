@@ -10,6 +10,7 @@ defmodule WUE.Pictures.Shape.Point do
 
   use Ecto.Schema
   alias Ecto.Changeset
+  alias WUE.Pictures.Shape
 
   @type t :: %__MODULE__{}
 
@@ -38,9 +39,9 @@ defmodule WUE.Pictures.Shape.Point do
   end
 
   @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
-  defp resolve(%Changeset{valid?: false}) do
-    {:error,
-     message: "point requires x and y fields, both of which are integers"}
+  defp resolve(%Changeset{valid?: false} = changeset) do
+    extra_errors = Shape.traverse_errors(changeset)
+    {:error, extra_errors: extra_errors, message: "is invalid"}
   end
 
   defp resolve(%Changeset{valid?: true} = changeset) do

@@ -16,10 +16,19 @@ defmodule WUEWeb.ErrorView do
 
   def render(
         "422.json",
+        %{changeset: %Changeset{data: %Pictures.Picture{}} = changeset}
+      ) do
+    %{
+      errors: Pictures.Shape.traverse_errors(changeset)
+    }
+  end
+
+  def render(
+        "422.json",
         %{changeset: %Changeset{data: %Pictures.PictureV2{}} = changeset}
       ) do
     %{
-      errors: Pictures.PictureV2.traverse_errors(changeset)
+      errors: Pictures.Shape.traverse_errors(changeset)
     }
   end
 
