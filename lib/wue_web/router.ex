@@ -8,7 +8,8 @@ defmodule WUEWeb.Router do
   scope "/api", WUEWeb do
     pipe_through :api
 
-    resources("/pictures", PictureController, only: [:index])
+    resources("/pictures", PictureController, only: [:index, :create])
+    post("/v2/pictures", PictureController, :create_v2)
     post("/pictures/batch_transpose", PictureController, :batch_transpose)
   end
 

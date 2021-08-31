@@ -51,7 +51,7 @@ defmodule WUE.Pictures.Shape.Box do
 
   @spec dump(t) :: map
   def dump(%__MODULE__{x: x, y: y, w: w, h: h}) do
-    %{x: x, y: y, w: w, h: h, type: "box"}
+    %{"x" => x, "y" => y, "w" => w, "h" => h, "type" => "box"}
   end
 
   @spec load(map) :: t

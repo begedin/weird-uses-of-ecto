@@ -1,6 +1,9 @@
 defmodule WUEWeb.ErrorView do
   use WUEWeb, :view
 
+  alias Ecto.Changeset
+  alias WUE.Pictures
+
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.
   # def render("500.json", _assigns) do
@@ -11,7 +14,16 @@ defmodule WUEWeb.ErrorView do
   # the template name. For example, "404.json" becomes
   # "Not Found".
 
-  def render("422.json", %{changeset: changeset}) do
+  def render(
+        "422.json",
+        %{changeset: %Changeset{data: %Pictures.PictureV2{}} = changeset}
+      ) do
+    %{
+      errors: Pictures.PictureV2.traverse_errors(changeset)
+    }
+  end
+
+  def render("422.json", %{changeset: %Changeset{} = changeset}) do
     %{
       errors: Ecto.Changeset.traverse_errors(changeset, &translate_error/1)
     }

@@ -31,6 +31,12 @@ defmodule WUE.Pictures.Shape do
 
   @shapes ["box", "line", "point", "polygon"]
 
+  @type t ::
+          Shape.Box.t()
+          | Shape.Line.t()
+          | Shape.Point.t()
+          | Shape.Polygon.t()
+
   @doc """
   The underlying base type of a polymorphic embed is a map, which, at the db
   level, is treated as a jsonb column.

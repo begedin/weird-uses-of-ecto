@@ -49,7 +49,7 @@ defmodule WUE.Pictures.Shape.Point do
 
   @spec dump(t) :: map
   def dump(%__MODULE__{x: x, y: y}) do
-    %{x: x, y: y, type: "point"}
+    %{"x" => x, "y" => y, "type" => "point"}
   end
 
   @spec load(map) :: t

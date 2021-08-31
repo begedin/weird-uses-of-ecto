@@ -68,8 +68,9 @@ defmodule WUE.Pictures.Shape.Polygon do
   @spec dump(t) :: map
   def dump(%__MODULE__{path: path}) do
     %{
-      path: Enum.map(path, &(&1 |> Shape.Point.dump() |> Map.delete(:type))),
-      type: "polygon"
+      "path" =>
+        Enum.map(path, &(&1 |> Shape.Point.dump() |> Map.delete("type"))),
+      "type" => "polygon"
     }
   end
 

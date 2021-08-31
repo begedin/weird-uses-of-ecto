@@ -13,8 +13,8 @@ defmodule WUE.Pictures do
           | Pictures.Shape.Point.t()
           | Pictures.Shape.Polygon.t()
 
-  @doc """
-  Used to create a new picture. Shape of expected params is
+  @create_params_shape """
+  Shape of expected params is
 
   ```
   %{
@@ -40,12 +40,18 @@ defmodule WUE.Pictures do
   %{
     "shape" => %{
       "type" => "polygon",
-      "path" => list(%{"x" => integer, "y" => integer})
+      "path" => list(%{"x" => integer, "y" => integer}) # min 3 points
     }
   }
   ```
 
   Atom keys are also supported
+  """
+
+  @doc """
+  Used to create a new picture.
+
+  #{@create_params_shape}
   """
   @spec create_picture!(map) :: Pictures.Picture.t()
   def create_picture!(%{} = params) do
@@ -60,6 +66,22 @@ defmodule WUE.Pictures do
     params
     |> Pictures.Picture.changeset()
     |> Changeset.put_assoc(:artist, artist)
+    |> Repo.insert!()
+  end
+
+  @doc """
+  Used to create a new picture using an alternative method, which is more
+  complex, but also allows for more complex validation errors in case of a bad
+  payload.
+
+  See `WUE.Pictures.PictureV2` on how this method works.
+
+  #{@create_params_shape}
+  """
+  @spec create_picture_v2!(map) :: Pictures.PictureV2.t()
+  def create_picture_v2!(%{} = params) do
+    params
+    |> Pictures.PictureV2.changeset()
     |> Repo.insert!()
   end
 

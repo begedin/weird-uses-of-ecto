@@ -48,7 +48,11 @@ defmodule WUE.Pictures.Shape.Line do
 
   @spec dump(t) :: map
   def dump(%__MODULE__{a: a, b: b}) do
-    %{a: Shape.Point.dump(a), b: Shape.Point.dump(b), type: "line"}
+    %{
+      "a" => a |> Shape.Point.dump() |> Map.delete("type"),
+      "b" => b |> Shape.Point.dump() |> Map.delete("type"),
+      "type" => "line"
+    }
   end
 
   @spec load(map) :: t
