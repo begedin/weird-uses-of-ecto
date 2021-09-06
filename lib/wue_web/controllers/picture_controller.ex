@@ -14,7 +14,8 @@ defmodule WUEWeb.PictureController do
   """
 
   def index(conn, params) do
-    with {:ok, params} <- Pictures.validate_batch_params(params),
+    with {:ok, %Pictures.BatchParams{} = params} <-
+           Pictures.validate_batch_params(params),
          pictures <- WUE.Pictures.list_pictures(params) do
       conn
       |> put_status(200)
@@ -29,7 +30,8 @@ defmodule WUEWeb.PictureController do
   validated and parsed in a prevalidation step.
   """
   def batch_transpose(conn, params) do
-    with {:ok, params} <- Pictures.validate_batch_params(params),
+    with {:ok, %Pictures.BatchParams{} = params} <-
+           Pictures.validate_batch_params(params),
          pictures <- WUE.Pictures.batch_transpose(params) do
       conn
       |> put_status(200)

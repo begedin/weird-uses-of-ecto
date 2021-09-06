@@ -35,6 +35,7 @@ defmodule WUE.Pictures.BatchParams do
     embeds_one(:filter, Pictures.Filter)
   end
 
+  @doc false
   @spec validate(map) :: {:ok, t} | {:error, Changeset.t()}
   def validate(%{} = params) do
     case changeset(params) do

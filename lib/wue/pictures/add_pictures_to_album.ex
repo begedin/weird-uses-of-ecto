@@ -26,6 +26,20 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
       field(:picture_id, :integer, null: false)
       field(:picture_name, :string, null: false)
     end
+
+    # This could also be a function within the TempData module. This usually
+    # works well when the same temp-table is used across multiple operations,
+    # within the backend.
+    @spec create_table(repo :: module) :: {:ok, Postgrex.Result.t()}
+    def create_table(repo) do
+      repo.query("""
+        CREATE TEMPORARY TABLE #{__schema__(:source)} (
+          album_id int,
+          picture_id int,
+          picture_name varchar
+        ) ON COMMIT DROP
+      """)
+    end
   end
 
   @type result :: %{
@@ -43,7 +57,9 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
     # but using a multi makes it a bit easier to debug things, and think of the
     # process in discrete steps.
     Multi.new()
-    |> Multi.run(:create_temp_table, fn repo, _t -> create_temp_table(repo) end)
+    |> Multi.run(:create_temp_table, fn repo, _t ->
+      TempData.create_table(repo)
+    end)
     # General process when using temp table usually runs like this example
     # - we prepopulate the temp table with data that helps us build the final
     #   data in actual tables
@@ -62,20 +78,6 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
       fn _t -> copy_to_actual_table() end
     )
     |> Repo.transaction()
-  end
-
-  # This could also be a function within the TempData module. This usually
-  # works well when the same temp-table is used across multiple operations,
-  # within the backend.
-  @spec create_temp_table(repo :: module) :: {:ok, Postgrex.Result.t()}
-  defp create_temp_table(repo) do
-    repo.query("""
-      CREATE TEMPORARY TABLE #{TempData.__schema__(:source)} (
-        album_id int,
-        picture_id int,
-        picture_name varchar
-      ) ON COMMIT DROP
-    """)
   end
 
   # This is just a query, since we have Multi.insert_all to use
@@ -125,10 +127,5 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
       album_id: temp.album_id,
       picture_id: temp.picture_id
     })
-  end
-
-  @spec drop_temp_table(repo :: module) :: {:ok, Postgrex.Result.t()}
-  defp drop_temp_table(repo) do
-    repo.query("DROP TABLE IF EXISTS #{TempData.__schema__(:source)}")
   end
 end

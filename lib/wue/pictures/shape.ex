@@ -37,7 +37,7 @@ defmodule WUE.Pictures.Shape do
   For ease of use, we have an atom and string variant, so any of the two
   potential params shapes are supported.
   """
-  @spec cast(map) :: {:ok, Pictures.shape()} | {:error, messsage: String.t()}
+  @spec cast(map) :: {:ok, Pictures.shape()} | {:error, Keyword.t()}
   def cast(%{"type" => type} = data) when type in @shapes do
     module = schema_module(type)
     module.cast(data)

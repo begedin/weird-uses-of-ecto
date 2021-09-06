@@ -137,44 +137,6 @@ defmodule WUEWeb.PictureControllerTest do
     end
   end
 
-  describe "POST /pictures" do
-    @path Routes.picture_path(WUEWeb.Endpoint, :create)
-
-    test "renders 422 if invalid params", %{conn: conn} do
-      params = %{"shape" => %{"type" => "box", "x" => "foo"}}
-
-      assert conn |> post(@path, params) |> json_response(422) == %{
-               "errors" => %{
-                 "shape" => %{
-                   "h" => ["can't be blank"],
-                   "w" => ["can't be blank"],
-                   "x" => ["is invalid"],
-                   "y" => ["can't be blank"]
-                 }
-               }
-             }
-    end
-  end
-
-  describe "POST /v2/pictures" do
-    @path Routes.picture_path(WUEWeb.Endpoint, :create_v2)
-
-    test "renders 422 if invalid params", %{conn: conn} do
-      params = %{"shape" => %{"type" => "box", "x" => "foo"}}
-
-      assert conn |> post(@path, params) |> json_response(422) == %{
-               "errors" => %{
-                 "shape" => %{
-                   "h" => ["can't be blank"],
-                   "w" => ["can't be blank"],
-                   "x" => ["is invalid"],
-                   "y" => ["can't be blank"]
-                 }
-               }
-             }
-    end
-  end
-
   describe "PUT /pictures/batch_transpose" do
     @path Routes.picture_path(WUEWeb.Endpoint, :batch_transpose)
 
@@ -229,6 +191,44 @@ defmodule WUEWeb.PictureControllerTest do
 
       assert %{box | shape: Pictures.Transpose.call(box.shape)} ==
                Pictures.Picture |> Repo.get(box.id) |> Repo.preload(:artist)
+    end
+  end
+
+  describe "POST /pictures" do
+    @path Routes.picture_path(WUEWeb.Endpoint, :create)
+
+    test "renders 422 if invalid params", %{conn: conn} do
+      params = %{"shape" => %{"type" => "box", "x" => "foo"}}
+
+      assert conn |> post(@path, params) |> json_response(422) == %{
+               "errors" => %{
+                 "shape" => %{
+                   "h" => ["can't be blank"],
+                   "w" => ["can't be blank"],
+                   "x" => ["is invalid"],
+                   "y" => ["can't be blank"]
+                 }
+               }
+             }
+    end
+  end
+
+  describe "POST /v2/pictures" do
+    @path Routes.picture_path(WUEWeb.Endpoint, :create_v2)
+
+    test "renders 422 if invalid params", %{conn: conn} do
+      params = %{"shape" => %{"type" => "box", "x" => "foo"}}
+
+      assert conn |> post(@path, params) |> json_response(422) == %{
+               "errors" => %{
+                 "shape" => %{
+                   "h" => ["can't be blank"],
+                   "w" => ["can't be blank"],
+                   "x" => ["is invalid"],
+                   "y" => ["can't be blank"]
+                 }
+               }
+             }
     end
   end
 end

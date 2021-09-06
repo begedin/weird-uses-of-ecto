@@ -16,8 +16,6 @@ defmodule WUE.Pictures.PictureV2 do
   WUE.Pictures.Shape
   ```
 
-
-
   Thus, for most intents, the custom type approach seems superior.
 
   The only advantage here is that there is no need for `:read_after_writes`, but
@@ -66,8 +64,8 @@ defmodule WUE.Pictures.PictureV2 do
   def changeset(%__MODULE__{} = struct, %{} = params) do
     struct
     |> Changeset.cast(params, [:name, :shape])
-    |> cast_shape()
     |> Changeset.validate_required([:shape])
+    |> cast_shape()
   end
 
   @spec cast_shape(Changeset.t()) :: Changeset.t()
