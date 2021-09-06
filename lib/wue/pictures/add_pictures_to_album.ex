@@ -105,6 +105,8 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
   end
 
   # Again, just a query, this time as a source for deletion
+  # We only allow unique names in an album, so this query returns all
+  # duplicate names using a window function.
   @spec cleanup :: Ecto.Query.t()
   defp cleanup do
     ranked_named =

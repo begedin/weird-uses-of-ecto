@@ -139,6 +139,30 @@ defmodule WUE.Pictures.Filter do
     where(queryable, [q], q.shape["type"] == ^type)
   end
 
+  defp apply_filter(:artist_name, artist_names, queryable)
+       when is_list(artist_names) do
+    queryable
+    |> maybe_join(
+      :inner,
+      [picture],
+      artist in assoc(picture, :artist),
+      as: :artist
+    )
+    |> where([artist: artist], artist.name in ^artist_names)
+  end
+
+  defp apply_filter(:artist_country, artist_countries, queryable)
+       when is_list(artist_countries) do
+    queryable
+    |> maybe_join(
+      :inner,
+      [picture],
+      artist in assoc(picture, :artist),
+      as: :artist
+    )
+    |> where([artist: artist], artist.country in ^artist_countries)
+  end
+
   defp apply_filter(:overlaps, %Bounds{} = within, queryable) do
     %{min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y} = within
 
@@ -163,30 +187,6 @@ defmodule WUE.Pictures.Filter do
       [point: point, line: line, box: box],
       not (is_nil(box) and is_nil(line) and is_nil(point))
     )
-  end
-
-  defp apply_filter(:artist_name, artist_names, queryable)
-       when is_list(artist_names) do
-    queryable
-    |> maybe_join(
-      :inner,
-      [picture],
-      artist in assoc(picture, :artist),
-      as: :artist
-    )
-    |> where([artist: artist], artist.name in ^artist_names)
-  end
-
-  defp apply_filter(:artist_country, artist_names, queryable)
-       when is_list(artist_names) do
-    queryable
-    |> maybe_join(
-      :inner,
-      [picture],
-      artist in assoc(picture, :artist),
-      as: :artist
-    )
-    |> where([artist: artist], artist.country in ^artist_names)
   end
 
   @spec point_query(integer, integer, integer, integer) :: Ecto.Query.t()

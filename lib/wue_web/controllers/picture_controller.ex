@@ -23,6 +23,21 @@ defmodule WUEWeb.PictureController do
   end
 
   @doc """
+  Performs a batch operation in a set of pictures defined by a filter.
+
+  The filter structure is shared between this and the `index` endpoint, so it's
+  validated and parsed in a prevalidation step.
+  """
+  def batch_transpose(conn, params) do
+    with {:ok, params} <- Pictures.validate_batch_params(params),
+         pictures <- WUE.Pictures.batch_transpose(params) do
+      conn
+      |> put_status(200)
+      |> json(pictures)
+    end
+  end
+
+  @doc """
   Creates a picture using a custom ecto-type to achieve a "polymorphic embed"
   effect.
 
@@ -64,21 +79,6 @@ defmodule WUEWeb.PictureController do
     |> json(picture)
   rescue
     e in Ecto.InvalidChangesetError -> {:error, e.changeset}
-  end
-
-  @doc """
-  Performs a batch operation in a set of pictures defined by a filter.
-
-  The filter structure is shared between this and the `index` endpoint, so it's
-  validated and parsed in a prevalidation step.
-  """
-  def batch_transpose(conn, params) do
-    with {:ok, params} <- Pictures.validate_batch_params(params),
-         pictures <- WUE.Pictures.batch_transpose(params) do
-      conn
-      |> put_status(200)
-      |> json(pictures)
-    end
   end
 
   defp fallback(conn, {:error, %Ecto.Changeset{valid?: false} = changeset}) do

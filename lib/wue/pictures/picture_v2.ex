@@ -48,7 +48,7 @@ defmodule WUE.Pictures.PictureV2 do
   @derive {Jason.Encoder, only: [:shape]}
   schema "pictures" do
     field(:name, :string, null: true)
-    field(:shape, :map, read_after_writes: true)
+    field(:shape, :map)
   end
 
   @doc """
