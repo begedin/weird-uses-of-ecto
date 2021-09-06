@@ -4,6 +4,8 @@ defmodule WUE.Pictures.AddPicturesToAlbumTest do
 
   alias WUE.Pictures
 
+  defp discard_temp, do: Repo.query!("DISCARD TEMP")
+
   test "adds pictures to album" do
     joes_album = Pictures.create_album!(%{name: "Joes's Album"})
     mikes_album = Pictures.create_album!(%{name: "Mike's Album"})
@@ -34,10 +36,14 @@ defmodule WUE.Pictures.AddPicturesToAlbumTest do
       filter: %Pictures.Filter{artist_name: ["Joe"]}
     }
 
+    discard_temp()
+
     assert {:ok, _} = Pictures.add_pictures_to_album!(joes_album, params)
     assert %{albums: [_]} = Repo.preload(picture_1, :albums)
 
     params = %Pictures.BatchParams{filter: %Pictures.Filter{select_all: true}}
+
+    discard_temp()
 
     assert {:ok, _} = Pictures.add_pictures_to_album!(my_album, params)
     assert %{albums: [_, _]} = Repo.preload(picture_1, :albums)

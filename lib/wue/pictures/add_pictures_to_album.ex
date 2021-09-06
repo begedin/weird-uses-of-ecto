@@ -61,12 +61,6 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
       "pictures_albums",
       fn _t -> copy_to_actual_table() end
     )
-    # Dropping the temp table isn't actually needed at runtime, but it is
-    # necessary in tests, as multiple tests end conflicting in temp table
-    # creation.
-    # The other alternative is to assign a random name to the temp table, but
-    # then using the schema module is a bit harder.
-    |> Multi.run(:drop_temp_table, fn repo, _t -> drop_temp_table(repo) end)
     |> Repo.transaction()
   end
 
