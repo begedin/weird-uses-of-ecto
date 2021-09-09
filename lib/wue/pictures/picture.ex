@@ -78,7 +78,7 @@ defmodule WUE.Pictures.Picture do
     iex>
     ...>  %{shape: %{type: "box", x: "a", w: "b"}}
     ...>  |> WUE.Pictures.Picture.changeset()
-    ...>  |> WUE.Pictures.Shape.traverse_errors()
+    ...>  |> WUEWeb.ErrorView.traverse_errors()
 
     %{
       shape: %{

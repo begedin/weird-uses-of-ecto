@@ -2,7 +2,7 @@ defmodule WUE.Pictures.ShapeTest do
   @moduledoc false
   use ExUnit.Case
 
-  alias WUE.Pictures.{Picture, PictureV2, Shape}
+  alias WUE.Pictures.{Picture, PictureV2}
 
   describe "traverse_errors/1" do
     test "traverses box errors" do
@@ -27,8 +27,13 @@ defmodule WUE.Pictures.ShapeTest do
         }
       }
 
-      assert params |> Picture.changeset() |> Shape.traverse_errors() == error
-      assert params |> PictureV2.changeset() |> Shape.traverse_errors() == error
+      assert params
+             |> Picture.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() == error
+
+      assert params
+             |> PictureV2.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() == error
     end
 
     test "traverses line errors" do
@@ -47,14 +52,21 @@ defmodule WUE.Pictures.ShapeTest do
         }
       }
 
-      assert params |> Picture.changeset() |> Shape.traverse_errors() == error
-      assert params |> PictureV2.changeset() |> Shape.traverse_errors() == error
+      assert params
+             |> Picture.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() == error
+
+      assert params
+             |> PictureV2.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() == error
     end
 
     test "traverses point errors" do
       params = %{shape: %{type: "point"}}
 
-      assert params |> PictureV2.changeset() |> Shape.traverse_errors() ==
+      assert params
+             |> PictureV2.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() ==
                %{shape: %{x: ["can't be blank"], y: ["can't be blank"]}}
     end
 
@@ -70,8 +82,13 @@ defmodule WUE.Pictures.ShapeTest do
         }
       }
 
-      assert params |> Picture.changeset() |> Shape.traverse_errors() == error
-      assert params |> PictureV2.changeset() |> Shape.traverse_errors() == error
+      assert params
+             |> Picture.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() == error
+
+      assert params
+             |> PictureV2.changeset()
+             |> WUEWeb.ErrorView.traverse_errors() == error
     end
   end
 end

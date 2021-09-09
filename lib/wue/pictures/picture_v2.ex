@@ -26,7 +26,7 @@ defmodule WUE.Pictures.PictureV2 do
     iex>
     ...>  %{shape: %{type: "box", x: "a", w: "b"}}
     ...>  |> WUE.Pictures.PictureV2.changeset()
-    ...>  |> WUE.Pictures.Shape.traverse_errors()
+    ...>  |> WUEWeb.ErrorView.traverse_errors()
 
     %{
       shape: %{
@@ -69,31 +69,31 @@ defmodule WUE.Pictures.PictureV2 do
   end
 
   @spec cast_shape(Changeset.t()) :: Changeset.t()
-  defp cast_shape(%Changeset{} = changeset) do
-    case get_shape_changeset(changeset) do
+  defp cast_shape(%Changeset{} = picture_changeset) do
+    case build_shape_changeset(picture_changeset) do
       %Changeset{valid?: true} = shape_changeset ->
         Changeset.put_change(
-          changeset,
+          picture_changeset,
           :shape,
           shape_changeset |> Changeset.apply_changes() |> dump()
         )
 
       %{valid?: false} = shape_changeset ->
-        errors = collect_errors(shape_changeset)
+        errors = Shape.Utils.collect_errors_into_map(shape_changeset)
 
-        Changeset.add_error(changeset, :shape, "is invalid",
+        Changeset.add_error(picture_changeset, :shape, "is invalid",
           extra_errors: errors
         )
 
       _ ->
-        Changeset.add_error(changeset, :shape, "is invalid")
+        Changeset.add_error(picture_changeset, :shape, "is invalid")
     end
   end
 
   @types ["box", "line", "point", "polygon"]
 
-  @spec get_shape_changeset(Changeset.t()) :: Changeset.t() | nil
-  defp get_shape_changeset(%Changeset{} = changeset) do
+  @spec build_shape_changeset(Changeset.t()) :: Changeset.t() | nil
+  defp build_shape_changeset(%Changeset{} = changeset) do
     case Changeset.get_field(changeset, :shape) do
       %{type: type} = data when type in @types -> do_cast_shape(data, type)
       %{"type" => type} = data when type in @types -> do_cast_shape(data, type)
@@ -123,11 +123,4 @@ defmodule WUE.Pictures.PictureV2 do
   defp dump(%Shape.Line{} = line), do: Shape.Line.dump(line)
   defp dump(%Shape.Point{} = point), do: Shape.Point.dump(point)
   defp dump(%Shape.Polygon{} = polygon), do: Shape.Polygon.dump(polygon)
-
-  @spec collect_errors(Changeset.t()) :: map
-  defp collect_errors(%Changeset{} = shape_changeset) do
-    Changeset.traverse_errors(shape_changeset, fn _c, _field, {msg, opts} ->
-      {msg, opts}
-    end)
-  end
 end

@@ -40,7 +40,7 @@ defmodule WUE.Pictures.Shape.Point do
 
   @spec resolve(Changeset.t()) :: {:ok, t} | {:error, message: String.t()}
   defp resolve(%Changeset{valid?: false} = changeset) do
-    extra_errors = Shape.traverse_errors(changeset)
+    extra_errors = Shape.Utils.collect_errors_into_map(changeset)
     {:error, extra_errors: extra_errors, message: "is invalid"}
   end
 

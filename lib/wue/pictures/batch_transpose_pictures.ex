@@ -13,11 +13,11 @@ defmodule WUE.Pictures.BatchTransposePictures do
 
   @doc false
   @spec call(Pictures.BatchParams.t()) :: list(Pictures.Picture.t())
-  def call(%Pictures.BatchParams{} = filter) do
+  def call(%Pictures.BatchParams{} = batch_params) do
     # The data list contains new attributes for the item, where each of the
     # attributes holds an id to join on.
     new_data =
-      filter
+      batch_params
       |> Pictures.list_pictures()
       |> Enum.map(fn %Pictures.Picture{} = picture ->
         transposed =
@@ -26,7 +26,7 @@ defmodule WUE.Pictures.BatchTransposePictures do
           |> Pictures.Shape.dump()
           |> Kernel.elem(1)
 
-        %{id: picture.id, shape: transposed}
+        %{id: picture.id, transposed: transposed}
       end)
 
     {_count, updated} =
@@ -38,7 +38,7 @@ defmodule WUE.Pictures.BatchTransposePictures do
           """
           SELECT
             (values ->> 'id')::bigint AS id,
-            (values -> 'shape') AS shape
+            (values -> 'transposed') AS transposed
           FROM JSONB_ARRAY_ELEMENTS(?) AS values
           """,
           ^new_data
@@ -46,7 +46,7 @@ defmodule WUE.Pictures.BatchTransposePictures do
         as: :data,
         on: picture.id == data.id
       )
-      |> update([data: data], set: [shape: data.shape])
+      |> update([data: data], set: [shape: data.transposed])
       |> select([picture], picture)
       |> Repo.update_all([])
 

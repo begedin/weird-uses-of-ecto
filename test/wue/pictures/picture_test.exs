@@ -109,10 +109,10 @@ defmodule WUE.Pictures.PictureTest do
       assert {"is invalid", opts} = errors[:shape]
 
       assert opts[:extra_errors] == %{
-               h: ["can't be blank"],
-               w: ["can't be blank"],
-               x: ["can't be blank"],
-               y: ["can't be blank"]
+               h: [{"can't be blank", [validation: :required]}],
+               w: [{"can't be blank", [validation: :required]}],
+               x: [{"can't be blank", [validation: :required]}],
+               y: [{"can't be blank", [validation: :required]}]
              }
     end
 
@@ -133,7 +133,9 @@ defmodule WUE.Pictures.PictureTest do
 
       assert {"is invalid", opts} = errors[:shape]
 
-      assert opts[:extra_errors] == %{path: ["can't be blank"]}
+      assert opts[:extra_errors] == %{
+               path: [{"can't be blank", [validation: :required]}]
+             }
     end
 
     test "validates each polygon point" do
@@ -156,10 +158,17 @@ defmodule WUE.Pictures.PictureTest do
       assert opts[:extra_errors] == %{
                path: [
                  %{},
-                 %{x: ["is invalid"]},
-                 %{y: ["can't be blank"]},
-                 %{x: ["can't be blank"]},
-                 %{x: ["can't be blank"], y: ["can't be blank"]}
+                 %{
+                   x: [
+                     {"is invalid", [type: :integer, validation: :cast]}
+                   ]
+                 },
+                 %{y: [{"can't be blank", [validation: :required]}]},
+                 %{x: [{"can't be blank", [validation: :required]}]},
+                 %{
+                   x: [{"can't be blank", [validation: :required]}],
+                   y: [{"can't be blank", [validation: :required]}]
+                 }
                ]
              }
     end
@@ -182,8 +191,8 @@ defmodule WUE.Pictures.PictureTest do
       assert {"is invalid", opts} = errors[:shape]
 
       assert opts[:extra_errors] == %{
-               x: ["can't be blank"],
-               y: ["can't be blank"]
+               x: [{"can't be blank", [validation: :required]}],
+               y: [{"can't be blank", [validation: :required]}]
              }
     end
 
@@ -192,7 +201,15 @@ defmodule WUE.Pictures.PictureTest do
                Picture.changeset(%{shape: %{type: "point", x: "a", y: "b"}})
 
       assert {"is invalid", opts} = errors[:shape]
-      assert opts[:extra_errors] == %{x: ["is invalid"], y: ["is invalid"]}
+
+      assert opts[:extra_errors] == %{
+               x: [
+                 {"is invalid", [type: :integer, validation: :cast]}
+               ],
+               y: [
+                 {"is invalid", [type: :integer, validation: :cast]}
+               ]
+             }
     end
 
     test "casts line" do
@@ -213,8 +230,8 @@ defmodule WUE.Pictures.PictureTest do
       assert {"is invalid", opts} = errors[:shape]
 
       assert opts[:extra_errors] == %{
-               a: ["can't be blank"],
-               b: ["can't be blank"]
+               a: [{"can't be blank", [validation: :required]}],
+               b: [{"can't be blank", [validation: :required]}]
              }
     end
 
@@ -227,7 +244,14 @@ defmodule WUE.Pictures.PictureTest do
       assert {"is invalid", opts} = errors[:shape]
 
       assert opts[:extra_errors] == %{
-               a: %{x: ["is invalid"], y: ["is invalid"]}
+               a: %{
+                 x: [
+                   {"is invalid", [type: :integer, validation: :cast]}
+                 ],
+                 y: [
+                   {"is invalid", [type: :integer, validation: :cast]}
+                 ]
+               }
              }
     end
   end

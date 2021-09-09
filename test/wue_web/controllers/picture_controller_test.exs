@@ -62,16 +62,14 @@ defmodule WUEWeb.PictureControllerTest do
       assert [_, _] =
                conn
                |> get(@path, %{
-                 filter: %{overlaps: %{min_x: 0, min_y: 0, max_x: 5, max_y: 5}}
+                 filter: %{bounds: %{min_x: 0, min_y: 0, max_x: 5, max_y: 5}}
                })
                |> json_response(200)
 
       assert [_] =
                conn
                |> get(@path, %{
-                 filter: %{
-                   overlaps: %{min_x: 6, min_y: 6, max_x: 10, max_y: 10}
-                 }
+                 filter: %{bounds: %{min_x: 6, min_y: 6, max_x: 10, max_y: 10}}
                })
                |> json_response(200)
     end

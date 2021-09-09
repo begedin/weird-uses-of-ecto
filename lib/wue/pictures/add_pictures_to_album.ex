@@ -33,11 +33,11 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
     @spec create_table(repo :: module) :: {:ok, Postgrex.Result.t()}
     def create_table(repo) do
       repo.query("""
-        CREATE TEMPORARY TABLE #{__schema__(:source)} (
-          album_id int,
-          picture_id int,
-          picture_name varchar
-        ) ON COMMIT DROP
+      CREATE TEMPORARY TABLE #{__schema__(:source)} (
+        album_id int,
+        picture_id int,
+        picture_name varchar
+      ) ON COMMIT DROP
       """)
     end
   end
@@ -69,13 +69,13 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
     |> Multi.insert_all(
       :prepare_data,
       TempData,
-      fn _t -> insert_into_temp_table(album, params) end
+      fn _t -> insert_into_temp_table_query(album, params) end
     )
-    |> Multi.delete_all(:cleanup_data, fn _t -> cleanup() end)
+    |> Multi.delete_all(:cleanup_data, fn _t -> cleanup_query() end)
     |> Multi.insert_all(
       :copy_data,
       "pictures_albums",
-      fn _t -> copy_to_actual_table() end
+      fn _t -> copy_to_actual_table_query() end
     )
     |> Repo.transaction()
   end
@@ -83,11 +83,11 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
   # This is just a query, since we have Multi.insert_all to use
   # Multi.insert_all and Repo.insert_all both support a query as the source in
   # recent versions.
-  @spec insert_into_temp_table(
+  @spec insert_into_temp_table_query(
           Pictures.Album.t(),
           Pictures.BatchParams.t()
         ) :: Ecto.Query.t()
-  defp insert_into_temp_table(
+  defp insert_into_temp_table_query(
          %Pictures.Album{} = album,
          %Pictures.BatchParams{} = params
        ) do
@@ -103,8 +103,8 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
   # Again, just a query, this time as a source for deletion
   # We only allow unique names in an album, so this query returns all
   # duplicate names using a window function.
-  @spec cleanup :: Ecto.Query.t()
-  defp cleanup do
+  @spec cleanup_query :: Ecto.Query.t()
+  defp cleanup_query do
     ranked_named =
       TempData
       |> where([temp], not is_nil(temp.picture_name))
@@ -121,8 +121,8 @@ defmodule WUE.Pictures.AddPicturesToAlbum do
 
   # And one more query, this time, again, a source for an insert into the final
   # table.
-  @spec copy_to_actual_table :: Ecto.Query.t()
-  defp copy_to_actual_table do
+  @spec copy_to_actual_table_query :: Ecto.Query.t()
+  defp copy_to_actual_table_query do
     select(TempData, [temp], %{
       album_id: temp.album_id,
       picture_id: temp.picture_id

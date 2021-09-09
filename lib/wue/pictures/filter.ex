@@ -66,11 +66,11 @@ defmodule WUE.Pictures.Filter do
   @primary_key false
   embedded_schema do
     field(:type, :string, null: true)
-    field(:select_all, :boolean, null: false, default: false)
     field(:artist_name, {:array, :string}, null: false)
     field(:artist_country, {:array, :string}, null: false)
+    embeds_one(:bounds, Bounds)
 
-    embeds_one(:overlaps, Bounds)
+    field(:select_all, :boolean, null: false, default: false)
   end
 
   @doc """
@@ -90,7 +90,7 @@ defmodule WUE.Pictures.Filter do
       :artist_name,
       :artist_country
     ])
-    |> Changeset.cast_embed(:overlaps)
+    |> Changeset.cast_embed(:bounds)
     |> validate_explicit_all()
   end
 
@@ -163,7 +163,7 @@ defmodule WUE.Pictures.Filter do
     |> where([artist: artist], artist.country in ^artist_countries)
   end
 
-  defp apply_filter(:overlaps, %Bounds{} = within, queryable) do
+  defp apply_filter(:bounds, %Bounds{} = within, queryable) do
     %{min_x: min_x, max_x: max_x, min_y: min_y, max_y: max_y} = within
 
     points = point_query(min_x, min_y, max_x, max_y)
