@@ -86,15 +86,15 @@ defmodule WUE.Pictures.PictureV2 do
         )
 
       _ ->
-        Changeset.add_error(picture_changeset, :shape, "is invalid")
+        Changeset.add_error(picture_changeset, :shape, "requires a type field")
     end
   end
 
   @types ["box", "line", "point", "polygon"]
 
   @spec build_shape_changeset(Changeset.t()) :: Changeset.t() | nil
-  defp build_shape_changeset(%Changeset{} = changeset) do
-    case Changeset.get_field(changeset, :shape) do
+  defp build_shape_changeset(%Changeset{} = picture_changeset) do
+    case Changeset.get_field(picture_changeset, :shape) do
       %{type: type} = data when type in @types -> do_cast_shape(data, type)
       %{"type" => type} = data when type in @types -> do_cast_shape(data, type)
       _ -> nil

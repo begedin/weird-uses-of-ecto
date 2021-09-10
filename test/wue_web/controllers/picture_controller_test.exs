@@ -215,15 +215,29 @@ defmodule WUEWeb.PictureControllerTest do
     @path Routes.picture_path(WUEWeb.Endpoint, :create_v2)
 
     test "renders 422 if invalid params", %{conn: conn} do
-      params = %{"shape" => %{"type" => "box", "x" => "foo"}}
+      params = %{
+        "shape" => %{
+          "type" => "polygon",
+          "path" => [
+            %{"x" => 1, "y" => 2},
+            %{},
+            %{"x" => "a", "y" => "b"},
+            %{"x" => 5},
+            %{"y" => 10}
+          ]
+        }
+      }
 
       assert conn |> post(@path, params) |> json_response(422) == %{
                "errors" => %{
                  "shape" => %{
-                   "h" => ["can't be blank"],
-                   "w" => ["can't be blank"],
-                   "x" => ["is invalid"],
-                   "y" => ["can't be blank"]
+                   "path" => [
+                     %{},
+                     %{"x" => ["can't be blank"], "y" => ["can't be blank"]},
+                     %{"x" => ["is invalid"], "y" => ["is invalid"]},
+                     %{"y" => ["can't be blank"]},
+                     %{"x" => ["can't be blank"]}
+                   ]
                  }
                }
              }
