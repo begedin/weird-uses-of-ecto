@@ -99,7 +99,7 @@ defmodule WUE.Pictures.Picture do
   @derive {Jason.Encoder, only: [:shape]}
   schema "pictures" do
     field(:name, :string, null: true)
-    field(:shape, Pictures.Shape, read_after_writes: true)
+    field(:shape, Pictures.Shape)
 
     belongs_to(:artist, Pictures.Artist)
     many_to_many(:albums, Pictures.Album, join_through: "pictures_albums")
