@@ -28,7 +28,6 @@ defmodule WUE.Pictures.Shape do
   @impl Ecto.Type
   def type, do: :map
 
-  @impl Ecto.Type
   @doc """
   Used when params are cast via Ecto.Changeset, or when arguments are passed in
   to Ecto.Query.
@@ -36,6 +35,7 @@ defmodule WUE.Pictures.Shape do
   For ease of use, we have an atom and string variant, so any of the two
   potential params shapes are supported.
   """
+  @impl Ecto.Type
   @spec cast(map) :: {:ok, Pictures.shape()} | {:error, Keyword.t()}
   def cast(%{"type" => type} = data) when type in @shapes do
     module = schema_module(type)
