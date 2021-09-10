@@ -13,7 +13,7 @@ defmodule WUEWeb.PictureController do
   endpoint, so it's  validated and parsed in a prevalidation step.
   """
 
-  def index(conn, params) do
+  def index(conn, %{} = params) do
     with {:ok, %Pictures.BatchParams{} = params} <-
            Pictures.validate_batch_params(params),
          pictures <- WUE.Pictures.list_pictures(params) do
@@ -29,7 +29,7 @@ defmodule WUEWeb.PictureController do
   The filter structure is shared between this and the `index` endpoint, so it's
   validated and parsed in a prevalidation step.
   """
-  def batch_transpose(conn, params) do
+  def batch_transpose(conn, %{} = params) do
     with {:ok, %Pictures.BatchParams{} = params} <-
            Pictures.validate_batch_params(params),
          pictures <- WUE.Pictures.batch_transpose(params) do
@@ -51,7 +51,7 @@ defmodule WUEWeb.PictureController do
   Note that the `rescue` approach is atypical and something the author would
   probably not recommend.
   """
-  def create(conn, params) do
+  def create(conn, %{} = params) do
     picture = Pictures.create_picture!(params)
 
     conn
@@ -73,7 +73,7 @@ defmodule WUEWeb.PictureController do
   Note that the `rescue` approach is atypical and something the author would
   probably not recommend.
   """
-  def create_v2(conn, params) do
+  def create_v2(conn, %{} = params) do
     picture = Pictures.create_picture_v2!(params)
 
     conn
