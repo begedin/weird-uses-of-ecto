@@ -11,7 +11,6 @@ defmodule WUE.Pictures.Shape do
   """
   use Ecto.Type
 
-  alias Ecto.Changeset
   alias WUE.{Pictures, Pictures.Shape}
 
   @shapes ["box", "line", "point", "polygon"]
@@ -57,12 +56,6 @@ defmodule WUE.Pictures.Shape do
     {:error, message: "must be a map"}
   end
 
-  @spec schema_module(String.t()) :: module
-  defp schema_module("box"), do: Shape.Box
-  defp schema_module("line"), do: Shape.Line
-  defp schema_module("point"), do: Shape.Point
-  defp schema_module("polygon"), do: Shape.Polygon
-
   @doc """
   Used when the data needs to be validated against a native type, for example,
   when finally saving the struct to the db.
@@ -80,19 +73,14 @@ defmodule WUE.Pictures.Shape do
   """
   @impl Ecto.Type
   @spec load(map) :: {:ok, Pictures.shape()}
-  def load(%{"type" => "point"} = data) do
-    {:ok, Shape.Point.load(data)}
+  def load(%{"type" => type} = data) when type in @shapes do
+    module = schema_module(type)
+    {:ok, module.load(data)}
   end
 
-  def load(%{"type" => "line"} = data) do
-    {:ok, Shape.Line.load(data)}
-  end
-
-  def load(%{"type" => "box"} = data) do
-    {:ok, Shape.Box.load(data)}
-  end
-
-  def load(%{"type" => "polygon"} = data) do
-    {:ok, Shape.Polygon.load(data)}
-  end
+  @spec schema_module(String.t()) :: module
+  defp schema_module("box"), do: Shape.Box
+  defp schema_module("line"), do: Shape.Line
+  defp schema_module("point"), do: Shape.Point
+  defp schema_module("polygon"), do: Shape.Polygon
 end
